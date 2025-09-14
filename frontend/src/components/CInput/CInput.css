@@ -1,0 +1,28 @@
+.c-input {
+  /* .c-readonly {
+
+    } */
+  /* .c-lookup {
+
+    } */
+  /* label     */
+  /* input */
+  > ul.c-lookup-list {
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+
+    > li.c-lookup-item {
+      background-color: #ffffff;
+      padding: 2px 4px;
+
+      &:nth-child(2n) {
+        background-color: #eeeeee;
+      }
+
+      &:hover {
+        background-color: #dfdfdf;
+      }
+    }
+  }
+}
