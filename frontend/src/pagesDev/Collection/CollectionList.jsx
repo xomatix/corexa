@@ -39,11 +39,7 @@ function CollectionList() {
     <div>
       CollectionList
       {/* {JSON.stringify(collections)} */}
-      <CTable
-        columns={collectionsColumns}
-        windowIdent={"CollectionPage"}
-        dataSetIdent={"collections"}
-      ></CTable>
+      <CTable columns={collectionsColumns} collection={"collections"}></CTable>
     </div>
   );
 }

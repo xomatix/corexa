@@ -1,0 +1,30 @@
+table.c-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead.c-th > tr > th.c-th-cell {
+    background-color: #18202f;
+    color: aliceblue;
+    text-align: left;
+    font-size: 16px;
+    padding: 4px 8px;
+  }
+
+  tbody > tr.c-tr {
+    background-color: #1f2937;
+    color: aliceblue;
+    font-size: 16px;
+    transition: all ease-in-out 0.3s;
+    > td.c-tr-cell {
+      padding: 4px 8px;
+      text-align: left;
+    }
+    &:nth-child(2n) {
+      background-color: #2d394b;
+    }
+
+    &:hover {
+      filter: brightness(1.4);
+    }
+  }
+}

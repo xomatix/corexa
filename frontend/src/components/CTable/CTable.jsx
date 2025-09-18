@@ -1,34 +1,59 @@
 import React, { useEffect, useState } from "react";
-import { fetchRows, getRows, setActiveRow } from "../../service/state";
+import { select } from "../../service/service";
+import "./CTable.css";
 
 function CTable({
-  windowIdent,
-  dataSetIdent,
+  collection,
   columns = [],
+  filter = "",
+  expand = "",
   onClick = () => {},
 }) {
   const [rows, setRows] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const callForData = async () => {
-    await fetchRows(windowIdent, dataSetIdent);
+    setLoading(true);
+    setError(null);
 
-    let data = getRows(windowIdent, dataSetIdent);
-    setRows(data);
+    try {
+      const resp = await select(collection, filter, expand);
+      const data = resp?.data || [];
+
+      // add internal unique id for rendering
+      const withUUID = data.map((row) => ({
+        ...row,
+        _uuid: crypto.randomUUID(),
+      }));
+
+      setRows(withUUID);
+    } catch (err) {
+      console.error("CTable fetch error:", err);
+      setError("Failed to load data");
+    } finally {
+      setLoading(false);
+    }
   };
-
   useEffect(() => {
     callForData();
-  }, []);
+  }, [collection, filter, expand]);
 
-  const onRowClick = (row, index) => {
-    // console.log("test", row);
-    setActiveRow(index);
+  const onRowClick = (row) => {
     onClick(row);
   };
 
-  if (!rows) {
-    return <div>Loading...</div>;
-  }
+  const resolveFieldValue = (row, path) => {
+    const parts = path.split(".");
+    if (parts.length == 1) return row[path];
+    const expandPath = parts.slice(0, -1).join(".");
+    const lastKey = parts[parts.length - 1];
+    return row.expand[expandPath][lastKey];
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (!rows || rows.length === 0) return <div>No rows found</div>;
 
   if (columns.length == 0) {
     return (
@@ -42,7 +67,7 @@ function CTable({
               padding: "4px 8px",
             }}
             onClick={() => {
-              onRowClick(row, index);
+              onRowClick(row);
             }}
           >
             {JSON.stringify(row)}
@@ -53,19 +78,11 @@ function CTable({
   }
 
   return (
-    <table style={{ borderCollapse: "collapse", width: "100%" }}>
-      <thead>
+    <table className="c-table">
+      <thead className="c-th">
         <tr>
           {columns.map((col) => (
-            <th
-              key={col.header}
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                textAlign: "left",
-                backgroundColor: "lightgray",
-              }}
-            >
+            <th key={col.header} className="c-th-cell">
               {col.header}
             </th>
           ))}
@@ -75,18 +92,17 @@ function CTable({
         {rows.map((row, index) => (
           <tr
             key={row._uuid + "_" + index}
-            onClick={() => onRowClick(row, index)}
-            style={{ border: "1px solid #ddd" }}
+            onClick={() => onRowClick(row)}
+            className="c-tr"
           >
             {columns.map((col, idcol) => (
               <td
                 key={`${row._uuid}_${col.Header}_${idcol}`}
-                style={{
-                  border: "1px solid #ddd",
-                  padding: "8px",
-                }}
+                className="c-tr-cell"
               >
-                {col.slot ? col.slot({ row }) : row[col.field]}
+                {col.slot
+                  ? col.slot({ row })
+                  : resolveFieldValue(row, col.field)}
               </td>
             ))}
           </tr>

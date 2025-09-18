@@ -58,6 +58,20 @@ function setActiveRow(windowIdent, dataSetIdent, index) {
   globalState[windowIdent][dataSetIdent]["focusedRow"] = index;
 }
 
+function getActiveRow(windowIdent, dataSetIdent) {
+  const windowData = globalState?.[windowIdent]?.[dataSetIdent];
+  if (!windowData) return null;
+
+  const rows = windowData.rows;
+  const focusedRowIndex = windowData.focusedRow;
+
+  if (!rows || focusedRowIndex == null || !rows[focusedRowIndex]) {
+    return null;
+  }
+
+  return rows[focusedRowIndex];
+}
+
 function setValue(windowIdent, dataSetIdent, source, field, value = null) {
   createBlankRecord(windowIdent, dataSetIdent);
   if (
@@ -107,4 +121,5 @@ export {
   getValue,
   fetchRows,
   setActiveRow,
+  getActiveRow,
 };

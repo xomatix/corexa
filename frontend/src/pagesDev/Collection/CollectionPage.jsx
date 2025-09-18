@@ -151,7 +151,7 @@ function CollectionPage() {
           key={"fieldsColumns" + id}
           columns={fieldsColumns}
           windowIdent={windowIdent}
-          dataSetIdent={"fields"}
+          collection={"fields"}
         />
       )}
       {field && (

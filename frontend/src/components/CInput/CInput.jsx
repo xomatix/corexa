@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./CInput.css";
 import { select } from "../../service/service";
 
@@ -24,6 +24,29 @@ const setNestedValue = (oldState, path, value) => {
   return newState;
 };
 
+/**
+ * CInput - controlled input component supporting text, number, checkbox and lookup behaviors.
+ *
+ * @param {Object} props - Component props.
+ * @param {Object} props.state - Current application/form state object.
+ * @param {(nextState: Object) => void} props.setState - State updater function.
+ * @param {string} props.path - Path (dot/array style) inside state where this input's value is stored.
+ * @param {string} [props.label=""] - Optional label text for the input.
+ * @param {string} [props.type="text"] - Input type: "text" | "number" | "checkbox" | "lookup".
+ * @param {boolean} [props.readOnly=false] - When true, prevents editing and disables checkbox interaction.
+ * @param {string} [props.collection=""] - (lookup only) collection name used to load lookup items.
+ * @param {string} [props.expand=""] - (lookup only) expand/query parameter passed to the select helper.
+ * @param {Object} [props.setFieldMap={}] - (lookup only) map of item keys to state paths to set on selection.
+ *
+ * Description:
+ * - Reads and writes the value at `props.path` using helper functions (getNestedValue / setNestedValue).
+ * - parseValue coerces raw input into the appropriate JS type for "number" and "checkbox".
+ * - For type === "lookup": on focus it loads data from the specified collection, displays a dropdown,
+ *   and on selecting an item writes mapped fields into state according to `setFieldMap`.
+ * - Honors `readOnly` by blocking changes and disabling checkbox interaction when set.
+ *
+ * @returns {JSX.Element} The rendered input element (with optional lookup dropdown).
+ */
 function CInput({
   state,
   setState,
@@ -33,7 +56,9 @@ function CInput({
   readOnly = false,
   collection = "",
   expand = "",
+  filter = "",
   setFieldMap = {},
+  children,
 }) {
   const value = getNestedValue(state, path) || "";
   const [isLookupExp, setIsLookupExp] = useState(false);
@@ -48,6 +73,10 @@ function CInput({
     const newState = setNestedValue(state, path, finalValue);
     setState(newState);
   };
+
+  useEffect(() => {
+    handleLookupLoadData();
+  }, [filter]);
 
   const parseValue = (rawValue) => {
     let finalValue = null;
@@ -79,7 +108,7 @@ function CInput({
   const handleLookupLoadData = async () => {
     if (collection == "") return;
 
-    const data = (await select(collection, "", expand)).data;
+    const data = (await select(collection, filter, expand)).data;
 
     if (data !== null && data !== undefined) {
       setLookupList(data);
@@ -109,6 +138,7 @@ function CInput({
     }
 
     setState(newState);
+    setIsLookupExp(false);
   };
 
   const handleOnBlur = () => {
@@ -134,14 +164,20 @@ function CInput({
         disabled={readOnly && type === "checkbox"}
       />
       {isLookupExp && (
-        <ul className="c-lookup-list" onMouseDown={(e) => e.preventDefault()}>
+        <ul
+          key={filter}
+          className="c-lookup-list"
+          onMouseDown={(e) => e.preventDefault()}
+        >
           {lookupList.map((item, idx) => (
             <li
               key={idx}
               className="c-lookup-item"
               onClick={(e) => handleLookupSelect(e, item)}
             >
-              {JSON.stringify(item)}
+              {typeof children === "function"
+                ? children(item)
+                : children ?? JSON.stringify(item)}
             </li>
           ))}
         </ul>

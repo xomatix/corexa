@@ -7,6 +7,7 @@ export function baseApiUrl() {
 export async function select(collection, filter, expand) {
   const payload = {
     action: "select",
+    session_id: sessionStorage.getItem("sessionId"),
     collection: collection,
     filter: filter,
     expand:expand
@@ -56,6 +57,7 @@ export async function select(collection, filter, expand) {
 export async function save(collection, action, data) {
   const payload = {
     action: action,
+    session_id: sessionStorage.getItem("sessionId"),
     collection: collection,
     data: data,
   };

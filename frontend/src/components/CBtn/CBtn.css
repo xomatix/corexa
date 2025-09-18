@@ -1,0 +1,36 @@
+:root {
+  --spinner-size: 20px;
+  --spinner-thickness: 3px;
+  --spinner-color: #f5a207;
+  --spinner-bg: rgba(0, 0, 0, 0.08);
+}
+
+button.c-btn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 0;
+  color: aliceblue;
+  font-size: 14px;
+  background-color: #008dce;
+  .c-spinner {
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+    display: inline-block;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: var(--spinner-thickness) solid var(--spinner-bg);
+    border-top-color: var(--spinner-color);
+    animation: spin 1000ms ease-in-out infinite;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
