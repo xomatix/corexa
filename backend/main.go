@@ -24,7 +24,6 @@ func main() {
 	if err := config.LoadConfig(db); err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
-
 	// 4. Set up Gin router
 	r := gin.Default()
 
@@ -43,6 +42,7 @@ func main() {
 		apiGroup.POST("/save", api.SaveHandler(db))
 		apiGroup.POST("/select", api.SelectHandler(db))
 		apiGroup.GET("/config", api.ConfigHandler)
+		apiGroup.GET("/login", api.LogInHandler(db))
 	}
 
 	// #TODO init logic

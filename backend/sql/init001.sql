@@ -48,16 +48,55 @@ CREATE TABLE IF NOT EXISTS sessions (
     expires_at TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS permissions (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    collections_id uuid NOT NULL REFERENCES collections(id) ON DELETE CASCADE, 
-    action varchar(10) NOT NULL, -- create, read, update, delete
-    condition TEXT,
-    UNIQUE(collections_id, action)
-);
+-- CREATE TABLE IF NOT EXISTS permissions (
+--     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+--     collections_id uuid NOT NULL REFERENCES collections(id) ON DELETE CASCADE, 
+--     action varchar(10) NOT NULL, -- create, read, update, delete
+--     condition TEXT,
+--     UNIQUE(collections_id, action)
+-- );
 
 CREATE TABLE IF NOT EXISTS data_types (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name varchar(100) NOT NULL UNIQUE, 
     label varchar(255)    
+);
+
+
+-- Role Based Access Control
+CREATE TABLE IF NOT EXISTS roles (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT
+);
+
+CREATE TABLE IF NOT EXISTS user_roles (
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role_id uuid NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, role_id)
+);
+
+CREATE TABLE IF NOT EXISTS permissions (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT
+);
+
+CREATE TABLE IF NOT EXISTS user_permissions (
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    permissions_id uuid NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, permissions_id)
+);
+
+CREATE TABLE IF NOT EXISTS role_permissions (
+    role_id uuid NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    permissions_id uuid NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+    PRIMARY KEY (role_id, permissions_id)
+);
+
+CREATE TABLE IF NOT EXISTS collection_permissions (
+    collections_id uuid NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+    permissions_id uuid NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+    action varchar(1), -- Create, Read, Update, Delete
+    PRIMARY KEY (collections_id, permissions_id, action)
 );

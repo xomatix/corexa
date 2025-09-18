@@ -7,15 +7,15 @@ import (
 )
 
 type FieldConfig struct {
-	ID           string  `json:"id"`
-	CollectionID string  `json:"collection_id"`
-	Name         string  `json:"name"`
-	Label        string  `json:"label"`
-	Type         string  `json:"type"`
-	IsPrimary    bool    `json:"is_primary"`
-	IsNotNull    bool    `json:"is_not_null"`
-	IsUnique     bool    `json:"is_unique"`
-	ForeignTable *string `json:"foreign_table"`
+	ID           string `json:"id"`
+	CollectionID string `json:"collection_id"`
+	Name         string `json:"name"`
+	Label        string `json:"label"`
+	Type         string `json:"type"`
+	IsPrimary    bool   `json:"is_primary"`
+	IsNotNull    bool   `json:"is_not_null"`
+	IsUnique     bool   `json:"is_unique"`
+	ForeignTable string `json:"foreign_table"`
 }
 
 type CollectionConfig struct {
@@ -52,7 +52,7 @@ func LoadConfig(db *sql.DB) error {
 	}
 
 	// Load fields
-	rows, err = db.Query("SELECT id, collection_id, name, coalesce(label, ''), type, is_primary, is_nullable, is_unique, foreign_table FROM fields")
+	rows, err = db.Query("SELECT id, collection_id, name, coalesce(label, ''), type, is_primary, is_nullable, is_unique, coalesce(foreign_table::text, '') FROM fields")
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    true,
 				IsNotNull:    false,
 				IsUnique:     true,
-				ForeignTable: nil,
 			},
 			"name": {
 				ID:           "name",
@@ -113,7 +112,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    false,
 				IsUnique:     true,
-				ForeignTable: nil,
 			},
 			"label": {
 				ID:           "label",
@@ -124,7 +122,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    false,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 		},
 	}
@@ -145,7 +142,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    true,
 				IsNotNull:    false,
 				IsUnique:     true,
-				ForeignTable: nil,
 			},
 			"collection_id": {
 				ID:           "collection_id",
@@ -156,7 +152,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    false,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 			"name": {
 				ID:           "name",
@@ -167,7 +162,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    false,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 			"label": {
 				ID:           "label",
@@ -178,7 +172,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    true,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 			"type": {
 				ID:           "type",
@@ -189,7 +182,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    false,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 			"is_primary": {
 				ID:           "is_primary",
@@ -200,7 +192,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    false,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 			"is_nullable": {
 				ID:           "is_nullable",
@@ -211,7 +202,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    false,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 			"is_unique": {
 				ID:           "is_unique",
@@ -222,7 +212,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    false,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 			"foreign_table": {
 				ID:           "foreign_table",
@@ -233,7 +222,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    true,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 		},
 	}
@@ -254,7 +242,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    true,
 				IsNotNull:    false,
 				IsUnique:     true,
-				ForeignTable: nil,
 			},
 			"name": {
 				ID:           "name",
@@ -265,7 +252,6 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    true,
 				IsUnique:     true,
-				ForeignTable: nil,
 			},
 			"label": {
 				ID:           "label",
@@ -276,12 +262,13 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    false,
 				IsUnique:     false,
-				ForeignTable: nil,
 			},
 		},
 	}
 	ConfigCache[coreDataTypes.Name] = coreDataTypes
 	ConfigCacheByID[coreDataTypes.ID] = coreDataTypes
+
+	loadPermissionsConfig()
 
 	log.Printf("Loaded %d collections into cache (by name).", len(ConfigCache))
 	return nil
@@ -299,4 +286,203 @@ func GetCollectionConfigByID(id string) (CollectionConfig, bool) {
 	defer configMutex.RUnlock()
 	cfg, exists := ConfigCacheByID[id]
 	return cfg, exists
+}
+
+func loadPermissionsConfig() {
+	// Roles table
+	coreRoles := CollectionConfig{
+		ID:    "core_roles",
+		Name:  "roles",
+		Label: "Roles [CORE]",
+		Fields: map[string]FieldConfig{
+			"id": {
+				ID:           "id",
+				CollectionID: "core_roles",
+				Name:         "id",
+				Label:        "ID",
+				Type:         "uuid",
+				IsPrimary:    true,
+				IsNotNull:    true,
+				IsUnique:     true,
+			},
+			"name": {
+				ID:           "name",
+				CollectionID: "core_roles",
+				Name:         "name",
+				Label:        "Name",
+				Type:         "varchar(255)",
+				IsPrimary:    false,
+				IsNotNull:    true,
+				IsUnique:     true,
+			},
+			"description": {
+				ID:           "description",
+				CollectionID: "core_roles",
+				Name:         "description",
+				Label:        "Description",
+				Type:         "text",
+			},
+		},
+	}
+	ConfigCache[coreRoles.Name] = coreRoles
+	ConfigCacheByID[coreRoles.ID] = coreRoles
+
+	// User_Roles join table
+	coreUserRoles := CollectionConfig{
+		ID:    "core_user_roles",
+		Name:  "user_roles",
+		Label: "User Roles [CORE]",
+		Fields: map[string]FieldConfig{
+			"user_id": {
+				ID:           "user_id",
+				CollectionID: "core_user_roles",
+				Name:         "user_id",
+				Label:        "User ID",
+				Type:         "uuid",
+				IsNotNull:    true,
+			},
+			"role_id": {
+				ID:           "role_id",
+				CollectionID: "core_user_roles",
+				Name:         "role_id",
+				Label:        "Role ID",
+				Type:         "uuid",
+				IsNotNull:    true,
+			},
+		},
+	}
+	ConfigCache[coreUserRoles.Name] = coreUserRoles
+	ConfigCacheByID[coreUserRoles.ID] = coreUserRoles
+
+	// Permissions table
+	corePermissions := CollectionConfig{
+		ID:    "core_permissions",
+		Name:  "permissions",
+		Label: "Permissions [CORE]",
+		Fields: map[string]FieldConfig{
+			"id": {
+				ID:           "id",
+				CollectionID: "core_permissions",
+				Name:         "id",
+				Label:        "ID",
+				Type:         "uuid",
+				IsPrimary:    true,
+				IsNotNull:    true,
+				IsUnique:     true,
+			},
+			"name": {
+				ID:           "name",
+				CollectionID: "core_permissions",
+				Name:         "name",
+				Label:        "Name",
+				Type:         "varchar(255)",
+				IsNotNull:    true,
+				IsUnique:     true,
+			},
+			"description": {
+				ID:           "description",
+				CollectionID: "core_permissions",
+				Name:         "description",
+				Label:        "Description",
+				Type:         "text",
+				IsNotNull:    false,
+			},
+		},
+	}
+	ConfigCache[corePermissions.Name] = corePermissions
+	ConfigCacheByID[corePermissions.ID] = corePermissions
+
+	// User_Permissions join table
+	coreUserPermissions := CollectionConfig{
+		ID:    "core_user_permissions",
+		Name:  "user_permissions",
+		Label: "User Permissions [CORE]",
+		Fields: map[string]FieldConfig{
+			"user_id": {
+				ID:           "user_id",
+				CollectionID: "core_user_permissions",
+				Name:         "user_id",
+				Label:        "User ID",
+				Type:         "uuid",
+				IsNotNull:    true,
+			},
+			"permissions_id": {
+				ID:           "permissions_id",
+				CollectionID: "core_user_permissions",
+				Name:         "permissions_id",
+				Label:        "Permission ID",
+				Type:         "uuid",
+				IsNotNull:    true,
+			},
+		},
+	}
+	ConfigCache[coreUserPermissions.Name] = coreUserPermissions
+	ConfigCacheByID[coreUserPermissions.ID] = coreUserPermissions
+
+	// Role_Permissions join table
+	coreRolePermissions := CollectionConfig{
+		ID:    "core_role_permissions",
+		Name:  "role_permissions",
+		Label: "Role Permissions [CORE]",
+		Fields: map[string]FieldConfig{
+			"role_id": {
+				ID:           "role_id",
+				CollectionID: "core_role_permissions",
+				Name:         "role_id",
+				Label:        "Role ID",
+				Type:         "uuid",
+				IsNotNull:    true,
+				IsPrimary:    true,
+				ForeignTable: "core_roles",
+			},
+			"permissions_id": {
+				ID:           "permissions_id",
+				CollectionID: "core_role_permissions",
+				Name:         "permissions_id",
+				Label:        "Permission ID",
+				Type:         "uuid",
+				IsPrimary:    true,
+				IsNotNull:    true,
+				ForeignTable: "core_permissions",
+			},
+		},
+	}
+	ConfigCache[coreRolePermissions.Name] = coreRolePermissions
+	ConfigCacheByID[coreRolePermissions.ID] = coreRolePermissions
+
+	// Collection_Permissions join table
+	coreCollectionPermissions := CollectionConfig{
+		ID:    "core_collection_permissions",
+		Name:  "collection_permissions",
+		Label: "Collection Permissions [CORE]",
+		Fields: map[string]FieldConfig{
+			"collections_id": {
+				ID:           "collections_id",
+				CollectionID: "core_collection_permissions",
+				Name:         "collections_id",
+				Label:        "Collection ID",
+				Type:         "uuid",
+				IsNotNull:    true,
+				ForeignTable: "core_collections",
+			},
+			"permissions_id": {
+				ID:           "permissions_id",
+				CollectionID: "core_collection_permissions",
+				Name:         "permissions_id",
+				Label:        "Permission ID",
+				Type:         "uuid",
+				IsNotNull:    true,
+			},
+			"action": {
+				ID:           "action",
+				CollectionID: "core_collection_permissions",
+				Name:         "action",
+				Label:        "Action",
+				Type:         "varchar(1)", // C, R, U, D
+				IsNotNull:    false,
+			},
+		},
+	}
+	ConfigCache[coreCollectionPermissions.Name] = coreCollectionPermissions
+	ConfigCacheByID[coreCollectionPermissions.ID] = coreCollectionPermissions
 }

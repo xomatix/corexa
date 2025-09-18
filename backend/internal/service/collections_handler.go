@@ -288,7 +288,7 @@ func addColumnQuery(db *sql.DB, req models.SaveRequest, tableName string) (strin
 	where c.id = $1 and f.is_primary = true ;`,
 		fieldConfig.ForeignTable)
 
-	if fieldConfig.ForeignTable != nil && len(*fieldConfig.ForeignTable) > 0 {
+	if fieldConfig.ForeignTable != "" && len(fieldConfig.ForeignTable) > 0 {
 		var foreignCollectionName, pkForeignCollectionFieldName string
 		if err := row.Scan(&foreignCollectionName, &pkForeignCollectionFieldName); err != nil {
 			return "", err

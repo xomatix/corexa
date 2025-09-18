@@ -10,15 +10,23 @@ const (
 
 type SaveRequest struct {
 	Collection string                 `json:"collection"`
+	SessionId  string                 `json:"session_id"`
 	Action     SaveAction             `json:"action"` // accepts InsertAction, UpdateAction, or DeleteAction
 	Data       map[string]interface{} `json:"data"`
 }
 
 type SelectRequest struct {
 	Collection string     `json:"collection"`
+	SessionId  string     `json:"session_id"`
 	Filter     string     `json:"filter"`
 	Expand     string     `json:"expand"`
 	Pagination Pagination `json:"pagination"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 type Pagination struct {
@@ -46,6 +54,7 @@ type CollectionPermission struct {
 
 type SessionUser struct {
 	ID          string `json:"id"`
+	SessionID   string `json:"session_id"`
 	Username    string `json:"username"`
 	DisplayName string `json:"display_name"`
 	Email       string `json:"email"`

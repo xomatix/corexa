@@ -67,7 +67,7 @@ func GetCollectionConfigForField(fromTable, foreignFieldName string) (config.Col
 		if v.Name != foreignFieldName {
 			continue
 		}
-		foundCfg, exists := config.GetCollectionConfigByID(*v.ForeignTable)
+		foundCfg, exists := config.GetCollectionConfigByID(v.ForeignTable)
 		if !exists {
 			return config.CollectionConfig{}, "", fmt.Errorf("No collection config for table %s was found", fromTable)
 		}
@@ -154,7 +154,7 @@ func buildJoinClause(expand string, cfg config.CollectionConfig) (string, map[st
 
 			joinClause +=
 				fmt.Sprintf(
-					"LEFT JOIN %s s%d ON s.%s = s%d.%s",
+					"\nLEFT JOIN %s s%d ON s.%s = s%d.%s ",
 					joinTableConfig.Name, joinIndex, expandGroup, joinIndex, pkField)
 			expandSelect = append(expandSelect, fmt.Sprintf("'%s', jsonb_agg(s%d.*)::json->0", expandGroup, joinIndex))
 
@@ -177,7 +177,7 @@ func buildJoinClause(expand string, cfg config.CollectionConfig) (string, map[st
 				}
 				joinClause +=
 					fmt.Sprintf(
-						"LEFT JOIN %s s%d ON %s.%s = s%d.%s ",
+						"\nLEFT JOIN %s s%d ON %s.%s = s%d.%s ",
 						joinTableConfig.Name, joinIndex, alias, expandPart, joinIndex, pkField)
 				if iter > 0 {
 					expandPrev = expandPrev + "." + expandPart
@@ -211,8 +211,11 @@ func HandleSelect(db *sql.DB, req models.SelectRequest, cfg config.CollectionCon
 	pkField := ""
 	for _, f := range cfg.Fields {
 		if f.IsPrimary {
-			pkField = f.Name
-			break
+			if pkField == "" {
+				pkField = "GROUP BY s." + f.Name
+			} else {
+				pkField += ", s." + f.Name
+			}
 		}
 	}
 
@@ -231,7 +234,7 @@ func HandleSelect(db *sql.DB, req models.SelectRequest, cfg config.CollectionCon
 		return models.SelectResponse{}, fmt.Errorf("failed to count records: %w", err)
 	}
 
-	query := fmt.Sprintf("SELECT s.*, json_build_object(%s) as expand FROM %s s %s %s GROUP BY s.%s", expandSelect, pq.QuoteIdentifier(cfg.Name), joinClause, whereClause, pkField)
+	query := fmt.Sprintf("SELECT s.*, json_build_object(%s) as expand FROM %s s %s %s %s", expandSelect, pq.QuoteIdentifier(cfg.Name), joinClause, whereClause, pkField)
 	argCount := len(args)
 
 	if req.Pagination.Limit > 0 {
@@ -268,11 +271,11 @@ func HandleSelect(db *sql.DB, req models.SelectRequest, cfg config.CollectionCon
 // #TODO
 func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig) (interface{}, error) {
 	for key, val := range req.Data {
-		fieldCfg, ok := cfg.Fields[key]
-		if !ok {
-			return nil, fmt.Errorf("field '%s' does not exist in collection '%s'", key, cfg.Name)
-		}
-		if !fieldCfg.IsNotNull && val == nil {
+		fieldCfg, _ := cfg.Fields[key]
+		// if !ok {
+		// 	return nil, fmt.Errorf("field '%s' does not exist in collection '%s'", key, cfg.Name)
+		// }
+		if fieldCfg.IsNotNull && val == nil {
 			return nil, fmt.Errorf("field '%s' cannot be null", key)
 		}
 	}
@@ -284,6 +287,10 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 		var args []interface{}
 		i := 1
 		for col, val := range req.Data {
+			_, ok := cfg.Fields[col]
+			if !ok {
+				continue
+			}
 			columns = append(columns, pq.QuoteIdentifier(col))
 			placeholders = append(placeholders, "$"+strconv.Itoa(i))
 			args = append(args, val)
@@ -324,7 +331,8 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 		var args []interface{}
 		i := 1
 		for col, val := range req.Data {
-			if col == pkField {
+			_, ok := cfg.Fields[col]
+			if col == pkField || !ok {
 				continue // Don't include PK in the SET clause
 			}
 			setClauses = append(setClauses, fmt.Sprintf("%s = $%d", pq.QuoteIdentifier(col), i))
@@ -360,22 +368,36 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 
 	// #TODO
 	case "delete":
-		pkField, ok := findPrimaryKey(cfg)
-		if !ok {
+		var pkFields []string
+		for name, field := range cfg.Fields {
+			if field.IsPrimary {
+				pkFields = append(pkFields, name)
+			}
+		}
+		if len(pkFields) == 0 {
 			return nil, fmt.Errorf("no primary key defined for collection '%s'", cfg.Name)
 		}
-		pkValue, ok := req.Data[pkField]
-		if !ok {
-			return nil, fmt.Errorf("primary key '%s' is required for delete", pkField)
+
+		var whereParts []string
+		var args []interface{}
+		i := 1
+		for _, f := range pkFields {
+			val, ok := req.Data[f]
+			if !ok {
+				return nil, fmt.Errorf("primary key '%s' is required for delete", f)
+			}
+			whereParts = append(whereParts, fmt.Sprintf("%s = $%d", pq.QuoteIdentifier(f), i))
+			args = append(args, val)
+			i++
 		}
 
-		query := fmt.Sprintf("DELETE FROM %s WHERE %s = $1",
+		query := fmt.Sprintf("DELETE FROM %s WHERE %s",
 			pq.QuoteIdentifier(cfg.Name),
-			pq.QuoteIdentifier(pkField),
+			strings.Join(whereParts, " AND "),
 		)
 
-		log.Printf("Executing SQL: %s with args: %v", query, []interface{}{pkValue})
-		result, err := db.Exec(query, pkValue)
+		log.Printf("Executing SQL: %s with args: %v", query, args)
+		result, err := db.Exec(query, args...)
 		if err != nil {
 			return nil, err
 		}

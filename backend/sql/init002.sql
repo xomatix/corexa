@@ -25,3 +25,8 @@ INSERT INTO data_types (name, label) VALUES
     ('bytea', 'Binary data'),
     ('tsvector', 'Full-text search optimized data')
 ON CONFLICT (name) DO NOTHING;
+
+
+INSERT INTO users (username, password_hash, display_name, is_active, is_superuser) VALUES
+    ('admin', md5('admin'), 'admin', TRUE, TRUE)
+ON CONFLICT (username) DO NOTHING;
