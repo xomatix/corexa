@@ -17,6 +17,7 @@ func SaveCollection(db *sql.DB, req models.SaveRequest) (interface{}, error) {
 
 	action := req.Action
 	data := req.Data
+	delete(data, "expand")
 
 	switch action {
 	case models.InsertAction:
@@ -78,6 +79,7 @@ func SaveCollection(db *sql.DB, req models.SaveRequest) (interface{}, error) {
 		rows, err := tx.Query(query, args...)
 		if err != nil {
 			tx.Rollback()
+			log.Printf("%s", query)
 			return nil, err
 		}
 		defer rows.Close()

@@ -15,8 +15,6 @@ import (
 )
 
 // #TODO
-// scanRowsToMaps is a helper to convert dynamic sql.Rows into a slice of maps.
-// This is a replacement for sqlx.MapScan.
 func scanRowsToMaps(rows *sql.Rows) ([]map[string]interface{}, error) {
 	columns, err := rows.Columns()
 	if err != nil {
@@ -67,7 +65,8 @@ func GetCollectionConfigForField(fromTable, foreignFieldName string) (config.Col
 		if v.Name != foreignFieldName {
 			continue
 		}
-		foundCfg, exists := config.GetCollectionConfigByID(v.ForeignTable)
+		fkFieldParts := strings.Split(v.ForeignTable, ".")
+		foundCfg, exists := config.GetCollectionConfigByID(fkFieldParts[0])
 		if !exists {
 			return config.CollectionConfig{}, "", fmt.Errorf("No collection config for table %s was found", fromTable)
 		}
@@ -76,7 +75,12 @@ func GetCollectionConfigForField(fromTable, foreignFieldName string) (config.Col
 			if !field.IsPrimary {
 				continue
 			}
-			pFieldName = field.Name
+			if len(fkFieldParts) == 1 {
+				pFieldName = field.Name
+			}
+			if len(fkFieldParts) == 2 && field.ID == fkFieldParts[1] {
+				pFieldName = field.Name
+			}
 			break
 		}
 		return foundCfg, pFieldName, nil
@@ -125,6 +129,29 @@ func buildWhereClause(filter string, joinAliases map[string]string, cfg config.C
 	}
 
 	return "WHERE " + filter, nil, nil
+}
+
+func buildGroupByClause(expand string, cfg config.CollectionConfig) (string, error) {
+	if len(strings.TrimSpace(expand)) == 0 {
+		return "", nil
+	}
+
+	groupByFields := make([]string, 0)
+	baseAlias := "s"
+
+	for _, field := range cfg.Fields {
+		log.Printf("%v", field)
+		if field.IsPrimary {
+			groupByFields = append(groupByFields, fmt.Sprintf("%s.%s", baseAlias, field.Name))
+		}
+	}
+
+	if len(groupByFields) < 1 {
+		return "", nil
+	}
+
+	groupByClause := "GROUP BY " + strings.Join(groupByFields, ", ")
+	return groupByClause, nil
 }
 
 func buildJoinClause(expand string, cfg config.CollectionConfig) (string, map[string]string, string, error) {
@@ -204,19 +231,10 @@ func HandleSelect(db *sql.DB, req models.SelectRequest, cfg config.CollectionCon
 	whereClause, args, err := buildWhereClause(req.Filter, joinAliases, cfg)
 	fmt.Printf("\nwhereClause %s", whereClause)
 
+	groupByClause, err := buildGroupByClause(req.Expand, cfg)
+
 	if err != nil {
 		return models.SelectResponse{}, err
-	}
-
-	pkField := ""
-	for _, f := range cfg.Fields {
-		if f.IsPrimary {
-			if pkField == "" {
-				pkField = "GROUP BY s." + f.Name
-			} else {
-				pkField += ", s." + f.Name
-			}
-		}
 	}
 
 	// #TODO make and test
@@ -234,7 +252,7 @@ func HandleSelect(db *sql.DB, req models.SelectRequest, cfg config.CollectionCon
 		return models.SelectResponse{}, fmt.Errorf("failed to count records: %w", err)
 	}
 
-	query := fmt.Sprintf("SELECT s.*, json_build_object(%s) as expand FROM %s s %s %s %s", expandSelect, pq.QuoteIdentifier(cfg.Name), joinClause, whereClause, pkField)
+	query := fmt.Sprintf("SELECT s.*, json_build_object(%s) as expand FROM %s s %s %s %s", expandSelect, pq.QuoteIdentifier(cfg.Name), joinClause, whereClause, groupByClause)
 	argCount := len(args)
 
 	if req.Pagination.Limit > 0 {

@@ -222,6 +222,7 @@ func LoadConfig(db *sql.DB) error {
 				IsPrimary:    false,
 				IsNotNull:    true,
 				IsUnique:     false,
+				ForeignTable: "core_collections",
 			},
 		},
 	}
@@ -259,7 +260,7 @@ func LoadConfig(db *sql.DB) error {
 				Name:         "label",
 				Label:        "Label",
 				Type:         "varchar(255)",
-				IsPrimary:    false,
+				IsPrimary:    true,
 				IsNotNull:    false,
 				IsUnique:     false,
 			},
@@ -340,6 +341,8 @@ func loadPermissionsConfig() {
 				Label:        "User ID",
 				Type:         "uuid",
 				IsNotNull:    true,
+				IsPrimary:    true,
+				ForeignTable: "core_users",
 			},
 			"role_id": {
 				ID:           "role_id",
@@ -347,7 +350,9 @@ func loadPermissionsConfig() {
 				Name:         "role_id",
 				Label:        "Role ID",
 				Type:         "uuid",
+				IsPrimary:    true,
 				IsNotNull:    true,
+				ForeignTable: "core_roles",
 			},
 		},
 	}
@@ -405,6 +410,8 @@ func loadPermissionsConfig() {
 				Label:        "User ID",
 				Type:         "uuid",
 				IsNotNull:    true,
+				IsPrimary:    true,
+				ForeignTable: "core_users",
 			},
 			"permissions_id": {
 				ID:           "permissions_id",
@@ -412,7 +419,9 @@ func loadPermissionsConfig() {
 				Name:         "permissions_id",
 				Label:        "Permission ID",
 				Type:         "uuid",
+				IsPrimary:    true,
 				IsNotNull:    true,
+				ForeignTable: "core_permissions",
 			},
 		},
 	}
@@ -463,6 +472,7 @@ func loadPermissionsConfig() {
 				Label:        "Collection ID",
 				Type:         "uuid",
 				IsNotNull:    true,
+				IsPrimary:    true,
 				ForeignTable: "core_collections",
 			},
 			"permissions_id": {
@@ -471,7 +481,9 @@ func loadPermissionsConfig() {
 				Name:         "permissions_id",
 				Label:        "Permission ID",
 				Type:         "uuid",
+				IsPrimary:    true,
 				IsNotNull:    true,
+				ForeignTable: "core_permissions",
 			},
 			"action": {
 				ID:           "action",
@@ -480,9 +492,78 @@ func loadPermissionsConfig() {
 				Label:        "Action",
 				Type:         "varchar(1)", // C, R, U, D
 				IsNotNull:    false,
+				IsPrimary:    true,
 			},
 		},
 	}
 	ConfigCache[coreCollectionPermissions.Name] = coreCollectionPermissions
 	ConfigCacheByID[coreCollectionPermissions.ID] = coreCollectionPermissions
+
+	coreUsers := CollectionConfig{
+		ID:    "core_users",
+		Name:  "users",
+		Label: "Users [CORE]",
+		Fields: map[string]FieldConfig{
+			"id": {
+				ID:           "id",
+				CollectionID: "core_users",
+				Name:         "id",
+				Label:        "User ID",
+				Type:         "uuid",
+				IsPrimary:    true,
+				IsNotNull:    true,
+			},
+			"username": {
+				ID:           "username",
+				CollectionID: "core_users",
+				Name:         "username",
+				Label:        "Username",
+				Type:         "varchar(255)",
+				IsNotNull:    true,
+				IsUnique:     true,
+			},
+			//     password_hash TEXT NOT NULL,
+			// "password_hash": {
+			// 	ID:           "action",
+			// 	CollectionID: "core_users",
+			// 	Name:         "action",
+			// 	Label:        "Action",
+			// 	Type:         "varchar(1)", // C, R, U, D
+			// 	IsNotNull:    false,
+			// },
+			"display_name": {
+				ID:           "display_name",
+				CollectionID: "core_users",
+				Name:         "display_name",
+				Label:        "Display name",
+				Type:         "text",
+			},
+			"email": {
+				ID:           "email",
+				CollectionID: "core_users",
+				Name:         "email",
+				Label:        "Email",
+				Type:         "varchar(320)",
+			},
+			"is_active": {
+				ID:           "is_active",
+				CollectionID: "core_users",
+				Name:         "is_active",
+				Label:        "Is Active",
+				Type:         "boolean",
+				IsNotNull:    true,
+			},
+			"is_superuser": {
+				ID:           "is_superuser",
+				CollectionID: "core_users",
+				Name:         "is_superuser",
+				Label:        "Is SUPERUSER",
+				Type:         "boolean",
+				IsNotNull:    true,
+			},
+		},
+	}
+	ConfigCache[coreUsers.Name] = coreUsers
+	ConfigCacheByID[coreUsers.ID] = coreUsers
+
 }
