@@ -21,7 +21,6 @@ function CBtn({ children, onClick = async () => {}, confirm = false }) {
   };
   const callOnClickAction = async () => {
     try {
-      console.log("{}{}");
       await onClick();
     } catch (error) {
       alert(JSON.stringify(error));

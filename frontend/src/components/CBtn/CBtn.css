@@ -34,3 +34,12 @@ button.c-btn {
     animation: none;
   }
 }
+
+div.modal-overlay > div.modal-content {
+  color: aliceblue;
+  background-color: #1f2937;
+  > div.modal-header > h2 {
+  }
+  > div.modal-body {
+  }
+}

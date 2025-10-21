@@ -5,6 +5,7 @@ import CModal from "../../components/CModal/CModal";
 import CInput from "../../components/CInput/CInput";
 import CBtn from "../../components/CBtn/CBtn";
 import { save } from "../../service/service";
+import "./RolesList.css";
 
 // MOCK_DATA.js
 
@@ -13,10 +14,10 @@ function RolesList() {
 
   const collectionName = "roles";
   const subCollectionName = "role_permissions";
+  const permissionsTableName = "permissions";
   const [count, setCount] = useState(0);
   const [record, setRecord] = useState(null);
   const [focusedRow, setFocusedRow] = useState(null);
-  const [subRecord, setSubRecord] = useState(null);
 
   const saveAction = async () => {
     if (record.id != null && record.id != undefined) {
@@ -27,16 +28,17 @@ function RolesList() {
     setCount(count + 1);
     setRecord(null);
   };
-  const saveRolePermission = async () => {
-    await save(subCollectionName, "insert", subRecord);
+  const addPermissionToRole = async (row) => {
+    await save(subCollectionName, "insert", {
+      permissions_id: row.id,
+      role_id: focusedRow.id,
+    });
 
-    setSubRecord(null);
     setCount(count + 1);
   };
   const deleteRolePermissionAction = async (row) => {
     await save(subCollectionName, "delete", row);
     setCount(count + 1);
-    setSubRecord(null);
   };
   const deleteAction = async () => {
     await save(collectionName, "delete", record);
@@ -53,6 +55,26 @@ function RolesList() {
       focusedRow.st != null
     )
       filters = [...filters, `permissions_id.name like '%${focusedRow.st}%'`];
+
+    return filters.join(" and ");
+  };
+  const calculateUnassignedPermissionsFilter = () => {
+    let filters = [];
+    if (
+      focusedRow != null &&
+      focusedRow.id != undefined &&
+      focusedRow.id != null
+    )
+      filters = [
+        ...filters,
+        `id not in (select permissions_id from ${subCollectionName} where role_id = '${focusedRow.id}')`,
+      ];
+    if (
+      focusedRow != null &&
+      focusedRow.stu != undefined &&
+      focusedRow.stu != null
+    )
+      filters = [...filters, `name like '%${focusedRow.stu}%'`];
 
     return filters.join(" and ");
   };
@@ -76,13 +98,13 @@ function RolesList() {
       ),
     },
   ];
-  const subCollectionsColumns = [
+  const assignedCollectionColumns = [
     {
       header: "Name",
       field: "permissions_id.name",
     },
     {
-      header: "Actions",
+      header: "",
       slot: ({ row }) => (
         <CBtn
           confirm={true}
@@ -90,7 +112,26 @@ function RolesList() {
             await deleteRolePermissionAction(row);
           }}
         >
-          Delete
+          Remove
+        </CBtn>
+      ),
+    },
+  ];
+  const unassignedPermissionsTableColumns = [
+    {
+      header: "Name",
+      field: "name",
+    },
+    {
+      header: "",
+      slot: ({ row }) => (
+        <CBtn
+          confirm={true}
+          onClick={async () => {
+            await addPermissionToRole(row);
+          }}
+        >
+          Assign
         </CBtn>
       ),
     },
@@ -109,33 +150,39 @@ function RolesList() {
         }}
       ></CTable>
       {JSON.stringify(focusedRow)}
-      {focusedRow != null && (
-        <>
-          <CInput
-            setState={setFocusedRow}
-            state={focusedRow}
-            path="st"
-            label="Search"
-          />
-          <CBtn onClick={() => setSubRecord({ role_id: focusedRow.id })}>
-            Insert Permission
-          </CBtn>
-          <CTable
-            key={count}
-            columns={subCollectionsColumns}
-            expand="permissions_id"
-            filter={calculateSubFilter()}
-            collection={subCollectionName}
-          />
-        </>
+      {focusedRow != null && focusedRow.id != null && (
+        <section className="c-role-permissions-section">
+          <div className="c-permissions-part">
+            <CInput
+              setState={setFocusedRow}
+              state={focusedRow}
+              path="stu"
+              label="Search"
+            />
+            <CTable
+              key={count}
+              columns={unassignedPermissionsTableColumns}
+              filter={calculateUnassignedPermissionsFilter()}
+              collection={permissionsTableName}
+            />
+          </div>
+          <div className="c-permissions-part">
+            <CInput
+              setState={setFocusedRow}
+              state={focusedRow}
+              path="st"
+              label="Search"
+            />
+            <CTable
+              key={count}
+              columns={assignedCollectionColumns}
+              expand="permissions_id"
+              filter={calculateSubFilter()}
+              collection={subCollectionName}
+            />
+          </div>
+        </section>
       )}
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-        }}
-      >
-        aaa {count}
-      </button>
       <CModal
         isOpen={record != null}
         onClose={() => setRecord(null)}
@@ -153,32 +200,6 @@ function RolesList() {
         <CBtn onClick={deleteAction} confirm={true}>
           Delete
         </CBtn>
-      </CModal>
-      <CModal
-        isOpen={subRecord != null}
-        onClose={() => setSubRecord(null)}
-        header={"Add Permission to role"}
-      >
-        <CInput
-          setState={setSubRecord}
-          state={subRecord}
-          path="name"
-          type="lookup"
-          label="Name"
-          collection="permissions"
-          filter={`name like '%${
-            subRecord != undefined && subRecord.name != undefined
-              ? subRecord.name
-              : ""
-          }%'`}
-          setFieldMap={{
-            id: "permissions_id",
-            name: "name",
-          }}
-        >
-          {(row) => <span>{row.name}</span>}
-        </CInput>
-        <CBtn onClick={saveRolePermission}>Add</CBtn>
       </CModal>
     </div>
   );

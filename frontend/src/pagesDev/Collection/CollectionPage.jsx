@@ -5,6 +5,7 @@ import CTable from "../../components/CTable/Ctable";
 import { save, select } from "../../service/service";
 import { setValue } from "../../service/state";
 import FieldPage from "./FieldPage";
+import CollectionPermissions from "./CollectionPermissions";
 
 function CollectionPage() {
   const { id } = useParams();
@@ -19,10 +20,14 @@ function CollectionPage() {
   const fetchRecord = async () => {
     setValue(windowIdent, "fields", "filter", `collection_id = '${id}'`);
     setFiltersSet(true);
-    console.log("ustawiono");
+
     let resp = await select("collections", `id = '${id}'`);
 
     if (resp.data && resp.data.length > 0) setRecord(resp.data[0]);
+  };
+
+  const calculateFieldsFilter = () => {
+    return `collection_id = '${id}'`;
   };
 
   useEffect(() => {
@@ -33,7 +38,6 @@ function CollectionPage() {
   }, [id]);
 
   const onChange = (e, field) => {
-    console.log(e.target.value);
     setRecord({ ...record, [field]: e.target.value });
   };
 
@@ -118,8 +122,6 @@ function CollectionPage() {
     <div id="c-collection-page">
       <h1>Collection {isInsert ? "create" : "edit/view"} page</h1>
       {isInsert ? <h3>Create collection</h3> : <h3>ID: {id}</h3>}
-      {/* #TODO delete json stringify */}
-      {JSON.stringify(record)}
       <div>
         <button onClick={saveAction}>
           {isInsert ? "Add collection" : "Save"}
@@ -152,6 +154,8 @@ function CollectionPage() {
           columns={fieldsColumns}
           windowIdent={windowIdent}
           collection={"fields"}
+          filter={calculateFieldsFilter()}
+          expand="foreign_table"
         />
       )}
       {field && (
@@ -162,6 +166,7 @@ function CollectionPage() {
           setField={setField}
         />
       )}
+      <CollectionPermissions collectionId={id} />
     </div>
   );
 }

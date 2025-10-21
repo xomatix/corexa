@@ -1,0 +1,10 @@
+section.c-role-permissions-section {
+  display: flex;
+  flex-direction: row;
+
+  gap: 16px;
+
+  > .c-permissions-part {
+    width: 50%;
+  }
+}

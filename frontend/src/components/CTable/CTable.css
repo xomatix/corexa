@@ -22,9 +22,5 @@ table.c-table {
     &:nth-child(2n) {
       background-color: #2d394b;
     }
-
-    &:hover {
-      filter: brightness(1.4);
-    }
   }
 }

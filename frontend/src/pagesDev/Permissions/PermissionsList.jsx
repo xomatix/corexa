@@ -6,8 +6,6 @@ import CInput from "../../components/CInput/CInput";
 import CBtn from "../../components/CBtn/CBtn";
 import { save } from "../../service/service";
 
-// MOCK_DATA.js
-
 function PermissionsList() {
   const navigate = useNavigate();
 
@@ -16,7 +14,11 @@ function PermissionsList() {
   const [record, setRecord] = useState(null);
 
   const savePermission = async () => {
-    await save(collectionName, "update", record);
+    if (record.id != null) {
+      await save(collectionName, "update", record);
+    } else {
+      await save(collectionName, "insert", record);
+    }
     setCount(count + 1);
     setRecord(null);
   };
@@ -48,7 +50,7 @@ function PermissionsList() {
 
   return (
     <div>
-      Permissions
+      Permissions<CBtn onClick={() => setRecord({})}>Insert permission</CBtn>
       <CTable
         key={count}
         columns={collectionsColumns}

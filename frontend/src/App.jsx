@@ -8,6 +8,8 @@ import FlowBuilder from "./pagesDev/FlowBuilder/FlowBuilder";
 import FormBuilder from "./pagesDev/FormBuilder/FormBuilder";
 import PermissionsList from "./pagesDev/Permissions/PermissionsList";
 import RolesList from "./pagesDev/Roles/RolesList";
+import Login from "./pagesDev/Login/Login";
+import UsersList from "./pagesDev/Users/UsersList";
 
 function App() {
   const isLoggedIn =
@@ -29,32 +31,24 @@ function App() {
             >
               Logout
             </a>
-            {/* <Link to={"/collections"}>Collections</Link>
-            <Link to={"/collections/insert"}>Collection Add</Link> */}
+            <Link to={"/collections"}>Collections</Link>
+            {/* <Link to={"/collections/insert"}>Collection Add</Link> */}
             <Link to={"/permissions"}>Permissions</Link>
             <Link to={"/roles"}>Roles</Link>
+            <Link to={"/users"}>Users</Link>
             {/* <Link to={"/flowbuilder"}>Flow Builder</Link>
             <Link to={"/formbuilder"}>Form Builder</Link> */}
           </>
         )}
       </nav>
-      <input type="text" id="sessionId" />
-      <button
-        onClick={() => {
-          sessionStorage.setItem(
-            "sessionId",
-            document.getElementById("sessionId").value
-          );
-          window.location.href = "/";
-        }}
-      >
-        Set session id
-      </button>
+
       <Routes>
         <Route path="/collections" element={<CollectionList />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/collections/:id" element={<CollectionPage />} />
         <Route path="/permissions" element={<PermissionsList />} />
         <Route path="/roles" element={<RolesList />} />
+        <Route path="/users" element={<UsersList />} />
         <Route path="/flowbuilder" element={<FlowBuilder />} />
         <Route path="/formbuilder" element={<FormBuilder />} />
       </Routes>

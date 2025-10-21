@@ -3,14 +3,20 @@ import "./CInput.css";
 import { select } from "../../service/service";
 
 const getNestedValue = (obj, path) => {
-  return path.split(".").reduce((acc, part) => {
-    if (acc && typeof acc === "object") return acc[part];
+  const finalPath = path.includes(".") ? `expand.${path}` : path;
+
+  return finalPath.split(".").reduce((acc, part) => {
+    if (acc && typeof acc === "object" && part in acc) {
+      return acc[part];
+    }
     return undefined;
   }, obj);
 };
 
 const setNestedValue = (oldState, path, value) => {
-  const pathParts = path.split(".");
+  const finalPath = path.includes(".") ? `expand.${path}` : path;
+
+  const pathParts = finalPath.split(".");
   const newState = { ...oldState };
 
   let current = newState;
@@ -67,10 +73,10 @@ function CInput({
   const handleChange = (e) => {
     if (readOnly) return;
 
-    const rawValue = e.target.value;
-    const finalValue = parseValue(rawValue);
+    const finalValue = parseValue(e);
 
     const newState = setNestedValue(state, path, finalValue);
+
     setState(newState);
   };
 
@@ -78,7 +84,8 @@ function CInput({
     handleLookupLoadData();
   }, [filter]);
 
-  const parseValue = (rawValue) => {
+  const parseValue = (e) => {
+    const rawValue = e.target.value;
     let finalValue = null;
 
     switch (type) {
@@ -122,18 +129,18 @@ function CInput({
     let newState = state;
     for (const key of Object.keys(setFieldMap)) {
       const rawValue = item[key];
-      const finalValue = parseValue(rawValue);
-      console.log(
-        Object.keys(setFieldMap),
-        "item",
-        item,
-        "rawVal",
-        rawValue,
-        "finalValue",
-        finalValue,
-        "path",
-        setFieldMap[key]
-      );
+      const finalValue = key == path ? parseValue(rawValue) : rawValue;
+      // console.log(
+      //   Object.keys(setFieldMap),
+      //   "item",
+      //   item,
+      //   "rawVal",
+      //   rawValue,
+      //   "finalValue",
+      //   finalValue,
+      //   "path",
+      //   setFieldMap[key]
+      // );
       newState = setNestedValue(newState, setFieldMap[key], finalValue);
     }
 
@@ -153,16 +160,30 @@ function CInput({
       } `}
     >
       {label && <label htmlFor={path + label}>{label}</label>}
-      <input
-        onBlur={handleOnBlur}
-        id={path + label}
-        type={type == "lookup" ? "text" : type}
-        value={value}
-        onChange={handleChange}
-        onFocus={handleOnFocus}
-        readOnly={readOnly}
-        disabled={readOnly && type === "checkbox"}
-      />
+      {type === "checkbox" && (
+        <input
+          onBlur={handleOnBlur}
+          id={path + label}
+          type={type}
+          checked={Boolean(getNestedValue(state, path))}
+          onChange={handleChange}
+          onFocus={handleOnFocus}
+          readOnly={readOnly}
+          disabled={readOnly && type === "checkbox"}
+        />
+      )}
+      {type !== "checkbox" && (
+        <input
+          onBlur={handleOnBlur}
+          id={path + label}
+          type={type == "lookup" ? "text" : type}
+          value={value}
+          onChange={handleChange}
+          onFocus={handleOnFocus}
+          readOnly={readOnly}
+          disabled={readOnly}
+        />
+      )}
       {isLookupExp && (
         <ul
           key={filter}

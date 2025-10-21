@@ -1,0 +1,17 @@
+.c-tabs {
+  width: 100%;
+
+  > .c-tabs-header {
+    display: flex;
+
+    > .c-tab {
+      padding: 4px 8px;
+      margin-bottom: 2px;
+
+      &.c-tab-active {
+        margin-bottom: 0;
+        border-bottom: 2px solid blue;
+      }
+    }
+  }
+}

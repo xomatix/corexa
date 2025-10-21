@@ -15,4 +15,17 @@
   .c-collection-fields {
     background-color: beige;
   }
+
+  .c-options-container {
+    display: flex;
+    gap: 4px;
+    margin: 4px 0;
+
+    .c-option {
+      padding: 2px 4px;
+      &.c-active {
+        border-bottom: 1px solid blue;
+      }
+    }
+  }
 }

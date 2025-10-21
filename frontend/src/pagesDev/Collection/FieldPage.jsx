@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react";
 import CModal from "../../components/CModal/CModal";
-import { save, select } from "../../service/service";
+import { save } from "../../service/service";
 import { useNavigate } from "react-router-dom";
-import { setValue } from "../../service/state";
+
 import "./FieldPage.css";
 import CInput from "../../components/CInput/CInput";
 
 function FieldPage({ windowIdent, field, setField = () => {} }) {
   const navigate = useNavigate();
-  const dataSetIdent = "fields";
   const isInsert = field.id === null || field.id === undefined;
-  const id = field.id ? field.id : "insert_field";
+  // const id = field.id ? field.id : "insert_field";
   const saveAction = async () => {
     const resp = await save("fields", isInsert ? "insert" : "update", field);
     alert(JSON.stringify(resp));
@@ -24,164 +23,15 @@ function FieldPage({ windowIdent, field, setField = () => {} }) {
     navigate(0);
   };
 
-  const onChange = (e, fieldName, setFieldMap = null, selectedRow = null) => {
-    let newVal = e.target.value;
-    if (["is_primary"].includes(fieldName)) {
-      console.log(field[fieldName]);
-      newVal = !field[fieldName];
-    }
-    if (setFieldMap == null || (selectedRow == null && setFieldMap !== null)) {
-      setField((prev) => ({ ...prev, [fieldName]: newVal }));
-      setValue(windowIdent, dataSetIdent, "rows", fieldName, newVal);
-    }
-    console.log(Object.keys(setFieldMap), selectedRow);
-    if (
-      setFieldMap !== null &&
-      Object.keys(setFieldMap).length > 0 &&
-      selectedRow !== null
-    ) {
-      for (let key of Object.keys(setFieldMap)) {
-        const value = setFieldMap[key];
-        console.log(key, value);
-        const rowValue = selectedRow[key];
-        setField((prev) => ({ ...prev, [value]: rowValue }));
-        setValue(windowIdent, dataSetIdent, "rows", value, rowValue);
-      }
-    }
+  const calculateTypeFilter = () => {
+    if (field["type"] == undefined) return "";
+    return `name like '%${field["type"]}%' or label like '%${field["type"]}%'`;
   };
-
-  //#region FIeldInput
-  // const FieldInput = ({
-  //   id,
-  //   fieldName,
-  //   value,
-  //   onChange,
-  //   label,
-  //   type = "text",
-  //   readOnly = false,
-  //   checked,
-  //   filter = null,
-  //   expand = "",
-  //   collection,
-  //   setFieldMap = {},
-  // }) => {
-  //   const inputId = `${id}_${fieldName}`;
-
-  //   const [lookupOptions, setLookupOptions] = useState([]);
-  //   const [isLoading, setIsLoading] = useState(false);
-  //   const [isListVisible, setListVisible] = useState(false);
-
-  //   useEffect(() => {
-  //     if (type === "lookup" && isListVisible) {
-  //       setIsLoading(true);
-  //       const fetchData = async () => {
-  //         try {
-  //           const data = await select(collection, filter, expand);
-  //           setLookupOptions(data.data);
-  //         } catch (error) {
-  //           console.error("Failed to fetch lookup data:", error);
-  //         } finally {
-  //           setIsLoading(false);
-  //         }
-  //       };
-
-  //       const timer = setTimeout(() => {
-  //         fetchData();
-  //       }, 300);
-
-  //       return () => clearTimeout(timer);
-  //     }
-  //     // eslint-disable-next-line react-hooks/exhaustive-deps
-  //   }, [value, isListVisible]);
-
-  //   const handleLookupSelect = (selectedValue) => {
-  //     // Create a synthetic event to pass to the parent's onChange handler
-  //     const event = {
-  //       target: {
-  //         value: selectedValue,
-  //       },
-  //     };
-  //     onChange(event, fieldName, setFieldMap, selectedValue);
-  //     setListVisible(false);
-  //   };
-
-  //   if (type === "checkbox") {
-  //     return (
-  //       <>
-  //         <input
-  //           type="checkbox"
-  //           key={inputId}
-  //           id={inputId}
-  //           name={inputId}
-  //           onChange={(e) => onChange(e, fieldName)}
-  //           checked={checked || false}
-  //         />
-  //         <label htmlFor={inputId}>{label}</label>
-  //         <br />
-  //       </>
-  //     );
-  //   }
-
-  //   if (type === "lookup") {
-  //     return (
-  //       <div className="lookup-container">
-  //         <input
-  //           type="text"
-  //           id={inputId}
-  //           readOnly={readOnly}
-  //           className="c-input"
-  //           value={value || ""}
-  //           onChange={(e) => {
-  //             onChange(e, fieldName, setFieldMap);
-  //             if (!isListVisible) setListVisible(true);
-  //           }}
-  //           onFocus={() => setListVisible(true)}
-  //           onBlur={() => setTimeout(() => setListVisible(false), 200)}
-  //           placeholder={label}
-  //         />
-  //         <label htmlFor={inputId}>{label}</label>
-
-  //         {isListVisible && (
-  //           <ul className="lookup-list">
-  //             {isLoading && lookupOptions === null ? (
-  //               <li className="lookup-item-loading">Loading...</li>
-  //             ) : (
-  //               lookupOptions.map((option) => (
-  //                 <li
-  //                   key={option.id}
-  //                   className="lookup-item"
-  //                   onMouseDown={() => handleLookupSelect(option)}
-  //                 >
-  //                   {option.name}
-  //                 </li>
-  //               ))
-  //             )}
-  //             {!isLoading && lookupOptions.length === 0 && value && (
-  //               <li className="lookup-item-no-results">No results found</li>
-  //             )}
-  //           </ul>
-  //         )}
-  //       </div>
-  //     );
-  //   }
-
-  //   return (
-  //     <>
-  //       <label htmlFor={inputId}>{label}</label>:&nbsp;
-  //       <input
-  //         key={inputId}
-  //         type={type}
-  //         readOnly={readOnly}
-  //         className="c-input"
-  //         value={value || ""}
-  //         onChange={(e) => onChange(e, fieldName)}
-  //         placeholder={label}
-  //       />
-  //       <br />
-  //     </>
-  //   );
-  // };
-  //#endregion
+  const calculateFkFilter = () => {
+    if (field.expand == undefined || field.expand["name"] == undefined)
+      return "";
+    return `name ilike '%${field.expand["name"]}%' or label ilike '%${field.expand["name"]}%'`;
+  };
 
   return (
     <CModal
@@ -189,7 +39,7 @@ function FieldPage({ windowIdent, field, setField = () => {} }) {
       isOpen={field != null}
       onClose={() => setField(null)}
     >
-      <div style={{ marginBottom: "16px" }}>{JSON.stringify(field)}</div>
+      {/* <div style={{ marginBottom: "16px" }}>{JSON.stringify(field)}</div> */}
       <>
         <CInput
           state={field}
@@ -212,6 +62,7 @@ function FieldPage({ windowIdent, field, setField = () => {} }) {
           path="type"
           label="Type"
           type="lookup"
+          filter={calculateTypeFilter()}
           readOnly={!isInsert}
           collection="data_types"
           setFieldMap={{
@@ -245,20 +96,14 @@ function FieldPage({ windowIdent, field, setField = () => {} }) {
         <CInput
           state={field}
           setState={setField}
-          path="foreign_table_name"
-          label="Foreign Table"
-          type="text"
-          readOnly={true}
-        />
-        <CInput
-          state={field}
-          setState={setField}
-          path="foreign_table"
+          path="foreign_table.name"
           label="Foreign Table"
           type="lookup"
+          filter={calculateFkFilter()}
           collection="collections"
+          readOnly={!isInsert}
           setFieldMap={{
-            name: "foreign_table_name",
+            name: "foreign_table.name",
             id: "foreign_table",
           }}
         />

@@ -1,14 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CTable from "../../components/CTable/Ctable";
+import CInput from "../../components/CInput/CInput";
 
 // MOCK_DATA.js
 
 function CollectionList() {
   const navigate = useNavigate();
+  const [filter, setFilter] = useState({});
 
   const clickAction = (row) => {
     navigate(`/collections/${row.id}`);
+  };
+
+  const calculateFilter = () => {
+    if (filter["colName"] == undefined) return "";
+    return `name like '%${filter["colName"]}%' or label like '%${filter["colName"]}%'`;
   };
 
   const collectionsColumns = [
@@ -38,8 +45,14 @@ function CollectionList() {
   return (
     <div>
       CollectionList
-      {/* {JSON.stringify(collections)} */}
-      <CTable columns={collectionsColumns} collection={"collections"}></CTable>
+      {JSON.stringify(filter)}
+      {calculateFilter}
+      <CInput path="colName" state={filter} setState={setFilter} />
+      <CTable
+        filter={calculateFilter()}
+        columns={collectionsColumns}
+        collection={"collections"}
+      />
     </div>
   );
 }
