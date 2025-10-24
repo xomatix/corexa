@@ -1,3 +1,23 @@
+DO $$
+DECLARE
+    users_collection_id uuid := gen_random_uuid();
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM collections WHERE name = 'users') THEN
+      INSERT INTO collections (id, name, label)
+      VALUES (users_collection_id, 'users', 'Users');
+  
+      INSERT INTO fields (collection_id, name, label, type, is_primary, is_nullable, is_unique)
+      VALUES
+          (users_collection_id, 'id', 'ID', 'uuid', TRUE, FALSE, TRUE),
+          (users_collection_id, 'username', 'Username', 'varchar(255)', FALSE, FALSE, TRUE),
+          (users_collection_id, 'password_hash', 'Password Hash', 'text', FALSE, FALSE, FALSE),
+          (users_collection_id, 'display_name', 'Display Name', 'text', FALSE, TRUE, FALSE),
+          (users_collection_id, 'email', 'Email', 'varchar(320)', FALSE, TRUE, FALSE),
+          (users_collection_id, 'is_active', 'Is Active', 'boolean', FALSE, FALSE, FALSE),
+          (users_collection_id, 'is_superuser', 'Is Superuser', 'boolean', FALSE, FALSE, FALSE);
+    END IF;
+END $$;
+
 INSERT INTO data_types (name, label) VALUES
     ('boolean', 'True/False value'),
     ('integer', 'Whole numbers'),

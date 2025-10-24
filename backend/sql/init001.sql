@@ -48,14 +48,6 @@ CREATE TABLE IF NOT EXISTS sessions (
     expires_at TIMESTAMP
 );
 
--- CREATE TABLE IF NOT EXISTS permissions (
---     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
---     collections_id uuid NOT NULL REFERENCES collections(id) ON DELETE CASCADE, 
---     action varchar(10) NOT NULL, -- create, read, update, delete
---     condition TEXT,
---     UNIQUE(collections_id, action)
--- );
-
 CREATE TABLE IF NOT EXISTS data_types (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name varchar(100) NOT NULL UNIQUE, 

@@ -39,9 +39,9 @@ func GetPermission(db *sql.DB, sessionId string, collection string, action model
 
 func LogInUser(db *sql.DB, username string, password string) (models.SessionUser, error) {
 	obtainUserQuery := `select 
-	u.id, u.username, u.display_name, u.email, u.is_superuser
+	u.id, u.username, coalesce(u.display_name, ''), coalesce(u.email, ''), u.is_superuser
 	from users u
-	where u.username = $1 and u.is_active = 1 and u.password = md5($2) limit 1;`
+	where u.username = $1 and u.is_active = TRUE and u.password_hash = md5($2) limit 1;`
 	row := db.QueryRow(obtainUserQuery, username, password)
 
 	var sessionUsr models.SessionUser

@@ -42,7 +42,7 @@ func main() {
 		apiGroup.POST("/save", api.SaveHandler(db))
 		apiGroup.POST("/select", api.SelectHandler(db))
 		apiGroup.GET("/config", api.ConfigHandler)
-		apiGroup.GET("/login", api.LogInHandler(db))
+		apiGroup.POST("/login", api.LogInHandler(db))
 	}
 
 	// #TODO init logic

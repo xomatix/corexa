@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -11,9 +12,27 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type DBConfig struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	DBName   string `json:"dbname"`
+	SSLMode  string `json:"sslmode"`
+}
+
+type Config struct {
+	Database DBConfig `json:"database"`
+}
+
 func Connect() *sql.DB {
-	//#TODO z configa
-	connStr := "user=postgres password=1 dbname=corexa sslmode=disable"
+	cfg, err := LoadConfig("config.json")
+	if err != nil {
+		log.Fatalf("Could not open database connection: %v", err)
+	}
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode)
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("Could not open database connection: %v", err)
@@ -26,6 +45,20 @@ func Connect() *sql.DB {
 
 	fmt.Println("Database connected successfully.")
 	return db
+}
+
+func LoadConfig(path string) (*DBConfig, error) {
+	configFile, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("could not read config file from path %s: %w", path, err)
+	}
+
+	var config Config
+	if err := json.Unmarshal(configFile, &config); err != nil {
+		return nil, fmt.Errorf("could not parse config file: %w", err)
+	}
+
+	return &config.Database, nil
 }
 
 func RunMigrations(db *sql.DB, dirPath string) error {
