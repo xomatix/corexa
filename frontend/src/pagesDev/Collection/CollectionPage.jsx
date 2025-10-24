@@ -6,6 +6,7 @@ import { save, select } from "../../service/service";
 import { setValue } from "../../service/state";
 import FieldPage from "./FieldPage";
 import CollectionPermissions from "./CollectionPermissions";
+import CBtn from "../../components/CBtn/CBtn";
 
 function CollectionPage() {
   const { id } = useParams();
@@ -126,7 +127,12 @@ function CollectionPage() {
         <button onClick={saveAction}>
           {isInsert ? "Add collection" : "Save"}
         </button>
-        {!isInsert && <button onClick={deleteAction}>Delete</button>}
+        {!isInsert && (
+          <CBtn confirm={true} key={id} onClick={() => deleteAction()}>
+            Delete
+          </CBtn>
+        )}
+        {/* {!isInsert && <button onClick={deleteAction}>Delete</button>} */}
       </div>
       {record && (
         <>

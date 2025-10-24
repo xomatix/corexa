@@ -5,13 +5,17 @@ import { useNavigate } from "react-router-dom";
 
 import "./FieldPage.css";
 import CInput from "../../components/CInput/CInput";
+import CBtn from "../../components/CBtn/CBtn";
 
 function FieldPage({ windowIdent, field, setField = () => {} }) {
   const navigate = useNavigate();
   const isInsert = field.id === null || field.id === undefined;
   // const id = field.id ? field.id : "insert_field";
   const saveAction = async () => {
-    const resp = await save("fields", isInsert ? "insert" : "update", field);
+    const resp = await save("fields", isInsert ? "insert" : "update", {
+      ...field,
+      name: field.name.toLowerCase(),
+    });
     alert(JSON.stringify(resp));
     setField(null);
     navigate(0);
@@ -28,9 +32,8 @@ function FieldPage({ windowIdent, field, setField = () => {} }) {
     return `name like '%${field["type"]}%' or label like '%${field["type"]}%'`;
   };
   const calculateFkFilter = () => {
-    if (field.expand == undefined || field.expand["name"] == undefined)
-      return "";
-    return `name ilike '%${field.expand["name"]}%' or label ilike '%${field.expand["name"]}%'`;
+    if (field["foreign_table_name"] == undefined) return "";
+    return `name ilike '%${field["foreign_table_name"]}%' or label ilike '%${field["foreign_table_name"]}%'`;
   };
 
   return (
@@ -39,7 +42,7 @@ function FieldPage({ windowIdent, field, setField = () => {} }) {
       isOpen={field != null}
       onClose={() => setField(null)}
     >
-      {/* <div style={{ marginBottom: "16px" }}>{JSON.stringify(field)}</div> */}
+      <div style={{ marginBottom: "16px" }}>{JSON.stringify(field)}</div>
       <>
         <CInput
           state={field}
@@ -96,21 +99,25 @@ function FieldPage({ windowIdent, field, setField = () => {} }) {
         <CInput
           state={field}
           setState={setField}
-          path="foreign_table.name"
+          path="foreign_table_name"
           label="Foreign Table"
           type="lookup"
           filter={calculateFkFilter()}
           collection="collections"
           readOnly={!isInsert}
           setFieldMap={{
-            name: "foreign_table.name",
+            name: "foreign_table_name",
             id: "foreign_table",
           }}
         />
       </>
       <div>
         <button onClick={() => setField(null)}>Close</button>
-        {!isInsert && <button onClick={deleteAction}>Delete</button>}
+        {!isInsert && (
+          <CBtn onClick={() => deleteAction()} confirm={true}>
+            Delete
+          </CBtn>
+        )}
         <button onClick={saveAction}>{isInsert ? "Add" : "Save"}</button>
       </div>
     </CModal>

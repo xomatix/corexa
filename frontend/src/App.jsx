@@ -10,6 +10,7 @@ import PermissionsList from "./pagesDev/Permissions/PermissionsList";
 import RolesList from "./pagesDev/Roles/RolesList";
 import Login from "./pagesDev/Login/Login";
 import UsersList from "./pagesDev/Users/UsersList";
+import CTable from "./components/CTable/Ctable";
 
 function App() {
   const isLoggedIn =
@@ -43,6 +44,7 @@ function App() {
       </nav>
 
       <Routes>
+        <Route path="/test" element={<CTable collection={"p_workout"} />} />
         <Route path="/collections" element={<CollectionList />} />
         <Route path="/login" element={<Login />} />
         <Route path="/collections/:id" element={<CollectionPage />} />

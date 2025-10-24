@@ -3,7 +3,13 @@ import "./CInput.css";
 import { select } from "../../service/service";
 
 const getNestedValue = (obj, path) => {
+  console.log("g nest val");
   const finalPath = path.includes(".") ? `expand.${path}` : path;
+  console.log("g nest path", finalPath);
+
+  finalPath.split(".").reduce((acc, part) => {
+    console.log("reduce ", acc, part);
+  }, obj);
 
   return finalPath.split(".").reduce((acc, part) => {
     if (acc && typeof acc === "object" && part in acc) {
@@ -66,9 +72,9 @@ function CInput({
   setFieldMap = {},
   children,
 }) {
-  const value = getNestedValue(state, path) || "";
   const [isLookupExp, setIsLookupExp] = useState(false);
   const [lookupList, setLookupList] = useState([]);
+  const value = getNestedValue(state, path) || "";
 
   const handleChange = (e) => {
     if (readOnly) return;
