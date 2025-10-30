@@ -1,30 +1,45 @@
 import React, { useEffect, useState } from "react";
 import { select } from "../../service/service";
 import "./CTable.css";
+import CPager from "../CPager/CPager";
 
 function CTable({
   collection,
   columns = [],
   filter = "",
   expand = "",
+  order = "",
+  limit = 10,
   onClick = () => {},
 }) {
   const [rows, setRows] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagesNo, setPagesNo] = useState(1);
 
   const callForData = async () => {
-    setLoading(true);
+    if (rows == null) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
-      const resp = await select(collection, filter, expand);
+      const resp = await select(
+        collection,
+        filter,
+        expand,
+        order,
+        limit,
+        currentPage - 1
+      );
       const data = resp?.data || [];
 
-      // add internal unique id for rendering
+      if (data.length > 0 && resp.pagination != null)
+        setPagesNo(Math.ceil(resp.pagination.total / resp.pagination.size));
+
       const withUUID = data.map((row) => ({
         ...row,
-        _uuid: crypto.randomUUID(),
       }));
 
       setRows(withUUID);
@@ -37,7 +52,7 @@ function CTable({
   };
   useEffect(() => {
     callForData();
-  }, [collection, filter, expand]);
+  }, [collection, filter, expand, currentPage]);
 
   const onRowClick = (row) => {
     onClick(row);
@@ -78,37 +93,44 @@ function CTable({
   }
 
   return (
-    <table className="c-table">
-      <thead className="c-th">
-        <tr>
-          {columns.map((col) => (
-            <th key={col.header} className="c-th-cell">
-              {col.header}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, index) => (
-          <tr
-            key={row._uuid + "_" + index}
-            onClick={() => onRowClick(row)}
-            className="c-tr"
-          >
-            {columns.map((col, idcol) => (
-              <td
-                key={`${row._uuid}_${col.Header}_${idcol}`}
-                className="c-tr-cell"
-              >
-                {col.slot
-                  ? col.slot({ row })
-                  : resolveFieldValue(row, col.field)}
-              </td>
+    <>
+      <table className="c-table">
+        <thead className="c-th">
+          <tr>
+            {columns.map((col) => (
+              <th key={col.header} className="c-th-cell">
+                {col.header}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => (
+            <tr
+              key={row._uuid + "_" + index}
+              onClick={() => onRowClick(row)}
+              className="c-tr"
+            >
+              {columns.map((col, idcol) => (
+                <td
+                  key={`${row._uuid}_${col.Header}_${idcol}`}
+                  className="c-tr-cell"
+                >
+                  {col.slot
+                    ? col.slot({ row })
+                    : resolveFieldValue(row, col.field)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <CPager
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        pagesNo={pagesNo}
+      />
+    </>
   );
 }
 

@@ -162,6 +162,7 @@ function CollectionPage() {
           collection={"fields"}
           filter={calculateFieldsFilter()}
           expand="foreign_table"
+          limit={30}
         />
       )}
       {field && (
