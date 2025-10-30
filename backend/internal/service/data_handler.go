@@ -3,6 +3,7 @@ package service
 import (
 	"corexa/internal/config"
 	"corexa/internal/models"
+	"corexa/internal/permissions"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 )
 
 // #TODO
-func scanRowsToMaps(rows *sql.Rows) ([]map[string]interface{}, error) {
+func ScanRowsToMaps(rows *sql.Rows) ([]map[string]interface{}, error) {
 	columns, err := rows.Columns()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get columns: %w", err)
@@ -131,6 +132,48 @@ func buildWhereClause(filter string, joinAliases map[string]string, cfg config.C
 	return "WHERE " + filter, nil, nil
 }
 
+func buildOrderByClause(order string, joinAliases map[string]string, cfg config.CollectionConfig) (string, error) {
+
+	replacements := []string{}
+	const pattern = `(?:\w{1,100}\.{1}){1,6}\w{1,100}`
+
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		fmt.Printf("Error compiling regex: %s\n", err)
+		return "", nil
+	}
+
+	matches := re.FindAllString(order, -1)
+
+	for _, match := range matches {
+		fmt.Println(match)
+
+		parts := strings.Split(match, ".")
+
+		// fieldName := parts[len(parts)-1]
+
+		parts = parts[:len(parts)-1]
+
+		strToReplace := strings.Join(parts, ".")
+		aliasToReplaceWith, ok := joinAliases[strToReplace]
+		replacements = append(replacements, fmt.Sprintf(strToReplace+" => "+aliasToReplaceWith))
+
+		if !ok {
+			return "", fmt.Errorf("Could not find alias replacement for field path: %s", strToReplace)
+		}
+
+		order = strings.Replace(order, strToReplace+".", aliasToReplaceWith+".", 1)
+	}
+
+	fmt.Printf("%v+", replacements)
+
+	if len(order) == 0 {
+		return "", nil
+	}
+
+	return "ORDER BY " + order, nil
+}
+
 func buildGroupByClause(expand string, cfg config.CollectionConfig) (string, error) {
 	if len(strings.TrimSpace(expand)) == 0 {
 		return "", nil
@@ -228,8 +271,19 @@ func buildJoinClause(expand string, cfg config.CollectionConfig) (string, map[st
 func HandleSelect(db *sql.DB, req models.SelectRequest, cfg config.CollectionConfig) (models.SelectResponse, error) {
 	joinClause, joinAliases, expandSelect, err := buildJoinClause(req.Expand, cfg)
 
+	sessionUsr, err := permissions.GetSessionUser(db, req.SessionId)
+	req.Filter = strings.ReplaceAll(req.Filter, "$session_usr.id", sessionUsr.ID)
+	req.Filter = strings.ReplaceAll(req.Filter, "$session_usr.display_name", sessionUsr.DisplayName)
+	req.Filter = strings.ReplaceAll(req.Filter, "$session_usr.email", sessionUsr.Email)
+	req.Filter = strings.ReplaceAll(req.Filter, "$session_usr.username", sessionUsr.Username)
+	req.Filter = strings.ReplaceAll(req.Filter, "$session_usr.is_superuser", iif(sessionUsr.IsSuperuser, "true", "false"))
+	req.Filter = strings.ReplaceAll(req.Filter, "$session_usr.is_active", iif(sessionUsr.IsActive, "true", "false"))
+
 	whereClause, args, err := buildWhereClause(req.Filter, joinAliases, cfg)
 	fmt.Printf("\nwhereClause %s", whereClause)
+
+	orderClause, err := buildOrderByClause(req.Order, joinAliases, cfg)
+	fmt.Printf("\norderByClause %s", whereClause)
 
 	groupByClause, err := buildGroupByClause(req.Expand, cfg)
 
@@ -252,7 +306,7 @@ func HandleSelect(db *sql.DB, req models.SelectRequest, cfg config.CollectionCon
 		return models.SelectResponse{}, fmt.Errorf("failed to count records: %w", err)
 	}
 
-	query := fmt.Sprintf("SELECT s.*, json_build_object(%s) as expand FROM %s s %s %s %s", expandSelect, pq.QuoteIdentifier(cfg.Name), joinClause, whereClause, groupByClause)
+	query := fmt.Sprintf("SELECT s.*, json_build_object(%s) as expand FROM %s s %s %s %s %s", expandSelect, pq.QuoteIdentifier(cfg.Name), joinClause, whereClause, groupByClause, orderClause)
 	argCount := len(args)
 
 	if req.Pagination.Limit > 0 {
@@ -261,7 +315,7 @@ func HandleSelect(db *sql.DB, req models.SelectRequest, cfg config.CollectionCon
 		argCount++
 	}
 	query += " OFFSET $" + strconv.Itoa(argCount+1)
-	args = append(args, req.Pagination.Offset)
+	args = append(args, req.Pagination.Offset*req.Pagination.Limit)
 
 	log.Printf("Executing SQL: %s with args: %v", query, args)
 
@@ -271,7 +325,67 @@ func HandleSelect(db *sql.DB, req models.SelectRequest, cfg config.CollectionCon
 	}
 	defer rows.Close()
 
-	results, err := scanRowsToMaps(rows)
+	results, err := ScanRowsToMaps(rows)
+	if err != nil {
+		return models.SelectResponse{}, err
+	}
+
+	return models.SelectResponse{
+		Data: results,
+		Pagination: models.PaginationInfo{
+			Size:  req.Pagination.Limit,
+			Page:  req.Pagination.Offset,
+			Total: total,
+		},
+	}, nil
+}
+
+func HandleInvokeSelect(db *sql.DB, req models.InvokeSelectRequest, sessionUser models.SessionUser) (models.SelectResponse, error) {
+	dataJSON, err := json.Marshal(req.Data)
+	if err != nil {
+		return models.SelectResponse{}, fmt.Errorf("failed to marshal data to JSON: %w", err)
+	}
+	sessionUserJSON, err := json.Marshal(sessionUser)
+	if err != nil {
+		return models.SelectResponse{}, fmt.Errorf("failed to marshal sessionUser to JSON: %w", err)
+	}
+
+	obtainSqlQuery := fmt.Sprintf("select invoke_json_procedure('%s', '%s', '%s')", req.Selector, string(sessionUserJSON), string(dataJSON))
+	var sqlQuery string
+	err = db.QueryRow(obtainSqlQuery).Scan(&sqlQuery)
+	if err != nil {
+		return models.SelectResponse{}, fmt.Errorf("failed to obtain selector %s: %w", req.Selector, err)
+	}
+
+	var orderBy string
+	if len(req.Order) > 0 {
+		orderBy = " ORDER BY " + req.Order
+	}
+
+	countQuery := fmt.Sprintf("SELECT count(s.*) FROM (%s) s ", sqlQuery)
+	fmt.Printf("\ncountQuery: %s", countQuery)
+	var total uint64
+	err = db.QueryRow(countQuery).Scan(&total)
+	if err != nil {
+		return models.SelectResponse{}, fmt.Errorf("failed to count records: %w", err)
+	}
+
+	query := fmt.Sprintf("SELECT s.* FROM (%s) s %s", sqlQuery, orderBy)
+
+	if req.Pagination.Limit > 0 {
+		query += " LIMIT " + strconv.FormatUint(req.Pagination.Limit, 10)
+	}
+	query += " OFFSET " + strconv.FormatUint(req.Pagination.Offset, 10)
+
+	log.Printf("Executing SQL: %s", query)
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return models.SelectResponse{}, fmt.Errorf("failed to execute select query: %w", err)
+	}
+	defer rows.Close()
+
+	results, err := ScanRowsToMaps(rows)
 	if err != nil {
 		return models.SelectResponse{}, err
 	}
@@ -295,6 +409,34 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 		// }
 		if fieldCfg.IsNotNull && val == nil {
 			return nil, fmt.Errorf("field '%s' cannot be null", key)
+		}
+		// session user macro
+		if val, ok := req.Data[key].(string); ok {
+			sessionUsr, err := permissions.GetSessionUser(db, req.SessionId)
+			if err != nil {
+				log.Printf("Error getting session user: %v", err)
+				continue
+			}
+
+			isSuperuserStr := "false"
+			if sessionUsr.IsSuperuser {
+				isSuperuserStr = "true"
+			}
+			isActiveStr := "false"
+			if sessionUsr.IsActive {
+				isActiveStr = "true"
+			}
+
+			replacer := strings.NewReplacer(
+				"$session_usr.id", sessionUsr.ID,
+				"$session_usr.display_name", sessionUsr.DisplayName,
+				"$session_usr.email", sessionUsr.Email,
+				"$session_usr.username", sessionUsr.Username,
+				"$session_usr.is_superuser", isSuperuserStr,
+				"$session_usr.is_active", isActiveStr,
+			)
+
+			req.Data[key] = replacer.Replace(val)
 		}
 	}
 	// #TODO
@@ -326,7 +468,7 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 			return nil, err
 		}
 		defer rows.Close()
-		results, err := scanRowsToMaps(rows)
+		results, err := ScanRowsToMaps(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -375,7 +517,7 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 			return nil, err
 		}
 		defer rows.Close()
-		results, err := scanRowsToMaps(rows)
+		results, err := ScanRowsToMaps(rows)
 		if err != nil {
 			return nil, err
 		}

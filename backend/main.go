@@ -30,10 +30,10 @@ func main() {
 	// #TODO
 	// CORS Middleware
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "*"},
-		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
-		AllowCredentials: true,
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"POST", "GET", "OPTIONS"},
+		AllowHeaders: []string{"Origin", "Content-Type"},
+		// AllowCredentials: true,
 	}))
 
 	// API Routes
@@ -41,8 +41,10 @@ func main() {
 	{
 		apiGroup.POST("/save", api.SaveHandler(db))
 		apiGroup.POST("/select", api.SelectHandler(db))
+		apiGroup.POST("/invokeSelect", api.InvokeSelectHandler(db))
 		apiGroup.GET("/config", api.ConfigHandler)
 		apiGroup.POST("/login", api.LogInHandler(db))
+		apiGroup.POST("/usrpermissions", api.UsrPermissionsHandler(db))
 	}
 
 	// #TODO init logic

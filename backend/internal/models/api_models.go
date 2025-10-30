@@ -20,7 +20,16 @@ type SelectRequest struct {
 	SessionId  string     `json:"session_id"`
 	Filter     string     `json:"filter"`
 	Expand     string     `json:"expand"`
+	Order      string     `json:"order"`
 	Pagination Pagination `json:"pagination"`
+}
+
+type InvokeSelectRequest struct {
+	Selector   string                 `json:"selector"`
+	SessionId  string                 `json:"session_id"`
+	Order      string                 `json:"order"`
+	Pagination Pagination             `json:"pagination"`
+	Data       map[string]interface{} `json:"data"`
 }
 
 type LoginRequest struct {
@@ -58,6 +67,6 @@ type SessionUser struct {
 	Username    string `json:"username"`
 	DisplayName string `json:"display_name"`
 	Email       string `json:"email"`
-	IsActive    string `json:"is_active"`
+	IsActive    bool   `json:"is_active"`
 	IsSuperuser bool   `json:"is_superuser"`
 }

@@ -24,6 +24,7 @@ INSERT INTO data_types (name, label) VALUES
     ('text', 'Unlimited length text'),
     ('uuid', 'Universally unique identifier'),
 
+    ('varchar(1)', 'One character (max 1 character)'),
     ('varchar(50)', 'Short text (max 50 characters)'),
     ('varchar(100)', 'Medium text (max 100 characters)'),
     ('varchar(255)', 'Standard text (max 255 characters)'),

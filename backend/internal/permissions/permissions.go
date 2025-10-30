@@ -54,7 +54,7 @@ func LogInUser(db *sql.DB, username string, password string) (models.SessionUser
 	clearSessionsQuery := `delete from sessions where expires_at < NOW();`
 	db.Exec(clearSessionsQuery)
 
-	insertSessionQuery := `insert into sessions (users_id, expires_at) values ($1, NOW() + INTERVAL '30 minutes') returning id;`
+	insertSessionQuery := `insert into sessions (users_id, expires_at) values ($1, NOW() + INTERVAL '30 days') returning id;`
 	row = db.QueryRow(insertSessionQuery, sessionUsr.ID)
 
 	err = row.Scan(&sessionUsr.SessionID)
@@ -80,6 +80,7 @@ func GetSessionUser(db *sql.DB, sessionId string) (models.SessionUser, error) {
 	if err != nil {
 		return models.SessionUser{}, fmt.Errorf("Error obtaining session user: %s", err)
 	}
+	sessionUsr.SessionID = sessionId
 
 	return sessionUsr, nil
 }

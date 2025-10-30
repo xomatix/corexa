@@ -17,23 +17,6 @@ func SaveCollection(db *sql.DB, req models.SaveRequest) (interface{}, error) {
 
 	action := req.Action
 	data := req.Data
-	delete(data, "expand")
-	cfg, exists := config.GetCollectionConfig(req.Collection)
-
-	if !exists {
-		return nil, fmt.Errorf("Collection '%s' not found in api config", req.Collection)
-	}
-
-	keys := make([]string, 0, len(data))
-	for k := range data {
-		keys = append(keys, k)
-	}
-
-	for _, key := range keys {
-		if _, ok := cfg.Fields[key]; !ok {
-			delete(data, key)
-		}
-	}
 
 	switch action {
 	case models.InsertAction:
@@ -99,7 +82,7 @@ func SaveCollection(db *sql.DB, req models.SaveRequest) (interface{}, error) {
 			return nil, err
 		}
 		defer rows.Close()
-		results, err := scanRowsToMaps(rows)
+		results, err := ScanRowsToMaps(rows)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
@@ -159,7 +142,7 @@ func SaveCollection(db *sql.DB, req models.SaveRequest) (interface{}, error) {
 			return nil, err
 		}
 		defer rows.Close()
-		results, err := scanRowsToMaps(rows)
+		results, err := ScanRowsToMaps(rows)
 		if err != nil {
 			return nil, err
 		}
