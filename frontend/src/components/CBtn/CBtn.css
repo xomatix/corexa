@@ -6,12 +6,17 @@
 }
 
 button.c-btn {
-  padding: 4px 8px;
-  border-radius: 4px;
+  height: 36px;
+  padding: 8px 16px;
+  border-radius: 8px;
   border: 0;
-  color: aliceblue;
+  font-weight: 500;
+  color: #fff;
   font-size: 14px;
-  background-color: #008dce;
+  line-height: 18px;
+  background-color: var(--primary-700);
+  transition: all 180ms ease;
+  cursor: pointer;
   .c-spinner {
     width: var(--spinner-size);
     height: var(--spinner-size);
@@ -21,6 +26,10 @@ button.c-btn {
     border: var(--spinner-thickness) solid var(--spinner-bg);
     border-top-color: var(--spinner-color);
     animation: spin 1000ms ease-in-out infinite;
+  }
+
+  &:hover {
+    background-color: var(--primary-600);
   }
 }
 @keyframes spin {
@@ -35,11 +44,13 @@ button.c-btn {
   }
 }
 
-div.modal-overlay > div.modal-content {
-  color: aliceblue;
-  background-color: #1f2937;
-  > div.modal-header > h2 {
-  }
-  > div.modal-body {
+.c-btn {
+  div.modal-overlay > div.modal-content {
+    color: aliceblue;
+    background-color: #1f2937;
+    > div.modal-header > h2 {
+    }
+    > div.modal-body {
+    }
   }
 }

@@ -18,6 +18,7 @@ function RolesList() {
   const [count, setCount] = useState(0);
   const [record, setRecord] = useState(null);
   const [focusedRow, setFocusedRow] = useState(null);
+  const [filter, setFilter] = useState({});
 
   const saveAction = async () => {
     if (record.id != null && record.id != undefined) {
@@ -45,6 +46,12 @@ function RolesList() {
     setCount(count + 1);
     setRecord(null);
   };
+
+  const calculateFilter = () => {
+    if (filter["searchText"] == undefined) return "";
+    return `name ilike '%${filter["searchText"]}%' or description ilike '%${filter["searchText"]}%'`;
+  };
+
   const calculateSubFilter = () => {
     let filters = [];
     if (focusedRow != null)
@@ -87,14 +94,13 @@ function RolesList() {
     {
       header: "Actions",
       slot: ({ row }) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
+        <CBtn
+          onClick={() => {
             setRecord(row);
           }}
         >
           Edit
-        </button>
+        </CBtn>
       ),
     },
   ];
@@ -138,9 +144,12 @@ function RolesList() {
   ];
 
   return (
-    <div>
-      Roles
-      <CBtn onClick={() => setRecord({})}>Insert Role</CBtn>
+    <section className="c-roles-list">
+      <span className="c-roles-title">Roles</span>
+      <div className="c-btn-section">
+        <CInput setState={setFilter} state={filter} path="searchText" />
+        <CBtn onClick={() => setRecord({})}>Add</CBtn>
+      </div>
       <CTable
         key={count}
         columns={collectionsColumns}
@@ -148,11 +157,12 @@ function RolesList() {
         onClick={(row) => {
           setFocusedRow(row);
         }}
-      ></CTable>
-      {JSON.stringify(focusedRow)}
+        filter={calculateFilter()}
+      />
+      {/* {JSON.stringify(focusedRow)} */}
       {focusedRow != null && focusedRow.id != null && (
         <section className="c-role-permissions-section">
-          <div className="c-permissions-part">
+          <div className="c-item">
             <CInput
               setState={setFocusedRow}
               state={focusedRow}
@@ -166,7 +176,7 @@ function RolesList() {
               collection={permissionsTableName}
             />
           </div>
-          <div className="c-permissions-part">
+          <div className="c-item">
             <CInput
               setState={setFocusedRow}
               state={focusedRow}
@@ -188,7 +198,7 @@ function RolesList() {
         onClose={() => setRecord(null)}
         header={"Edit Permission"}
       >
-        {JSON.stringify(record)}
+        {/* {JSON.stringify(record)} */}
         <CInput setState={setRecord} state={record} path="name" label="Name" />
         <CInput
           setState={setRecord}
@@ -196,12 +206,16 @@ function RolesList() {
           path="description"
           label="Description"
         />
-        <CBtn onClick={saveAction}>Save</CBtn>
-        <CBtn onClick={deleteAction} confirm={true}>
-          Delete
-        </CBtn>
+        <div className="c-tools">
+          {record?.id != undefined && (
+            <CBtn onClick={deleteAction} confirm={true}>
+              Delete
+            </CBtn>
+          )}
+          <CBtn onClick={saveAction}>Save</CBtn>
+        </div>
       </CModal>
-    </div>
+    </section>
   );
 }
 

@@ -1,10 +1,10 @@
-section.c-collections-list {
+section.c-permissions-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 24px;
 
-  .c-collections-title {
+  .c-permissions-title {
     font-size: 18px;
     line-height: 24px;
   }

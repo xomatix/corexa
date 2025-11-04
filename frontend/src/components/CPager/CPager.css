@@ -1,16 +1,18 @@
-.c-row.c-pager {
-  height: 46px;
-  justify-content: center;
+.c-pager {
+  height: 36px;
+  justify-content: start;
   gap: 16px;
   padding-top: 16px;
   margin-top: auto;
+  display: flex;
+  color: #fff;
 
   .c-prev-page,
   .c-next-page {
     border: 1px solid var(--border-secondary);
     height: 100%;
-    width: 46px;
-    background-color: var(--bg-secondary);
+    width: 36px;
+    background-color: var(--bg-elevated);
     /* padding: 4px; */
     border-radius: 8px;
     display: flex;
@@ -18,19 +20,19 @@
 
     > img {
       margin: auto;
-      width: 26px;
-      height: 26px;
+      width: 16px;
+      height: 16px;
       filter: brightness(0) saturate(100%) invert(100%) sepia(94%) saturate(8%)
         hue-rotate(228deg) brightness(112%) contrast(92%);
     }
     &:hover {
-      background-color: var(--bg-tertiary);
+      background-color: var(--bg-secondary);
     }
   }
   .c-pages-count {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 18px;
+    font-size: 16px;
   }
 }

@@ -5,8 +5,7 @@ import CInput from "../../components/CInput/CInput";
 import CBtn from "../../components/CBtn/CBtn";
 import CModal from "../../components/CModal/CModal";
 import { save } from "../../service/service";
-
-// MOCK_DATA.js
+import "./CollectionList.css";
 
 function CollectionList() {
   const navigate = useNavigate();
@@ -48,25 +47,24 @@ function CollectionList() {
     {
       header: "Actions",
       slot: ({ row }) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
+        <CBtn
+          onClick={() => {
             clickAction(row);
           }}
         >
           Edit
-        </button>
+        </CBtn>
       ),
     },
   ];
 
   return (
-    <div>
-      CollectionList
-      <CBtn key={"mfaevoijeanfo"} onClick={() => setCollection({})}>
-        Add
-      </CBtn>
-      <CInput path="colName" state={filter} setState={setFilter} />
+    <section className="c-collections-list">
+      <span className="c-collections-title">Collections</span>
+      <div className="c-btn-section">
+        <CInput path="colName" state={filter} setState={setFilter} />
+        <CBtn onClick={() => setCollection({})}>Add</CBtn>
+      </div>
       <CTable
         filter={calculateFilter()}
         columns={collectionsColumns}
@@ -84,23 +82,19 @@ function CollectionList() {
             state={collection}
             setState={setCollection}
           />
-          <br />
           <CInput
             label="Label"
             path="label"
             state={collection}
             setState={setCollection}
           />
-          <br />
-          <CBtn key={"mfaevoijeanfo"} onClick={() => setCollection({})}>
-            Close
-          </CBtn>{" "}
-          <CBtn key={"mfaevoijeanfo"} onClick={() => insertCollection()}>
-            Save
-          </CBtn>
+          <div className="c-tools">
+            <CBtn onClick={() => setCollection(null)}>Close</CBtn>{" "}
+            <CBtn onClick={() => insertCollection()}>Save</CBtn>
+          </div>
         </CModal>
       )}
-    </div>
+    </section>
   );
 }
 

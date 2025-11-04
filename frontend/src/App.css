@@ -1,2 +1,115 @@
-#root {
+:root {
+  /* Primary Colors */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6; /* Main primary */
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+  --primary-950: #172554;
+
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373; /* Main neutral */
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+  --neutral-950: #0a0a0a;
+
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #020617;
+
+  /* Background Colors - Neutral */
+  --bg-primary: #171717; /* slate-900 - Main background */
+  --bg-secondary: #262626; /* slate-800 - Cards, panels */
+  --bg-tertiary: #404040; /* slate-700 - Inputs, secondary elements */
+  --bg-elevated: #0a0a0a; /* slate-950 - Top bars, elevated sections */
+
+  /* Text Colors Neutral */
+  --text-primary: #fafafa; /* slate-100 - Main text */
+  --text-secondary: #d4d4d4; /* slate-300 - Labels, less important text */
+  --text-tertiary: #a3a3a3; /* slate-400 - Placeholders, muted text */
+  --text-muted: #737373; /* slate-500 - Very muted text, timestamps */
+
+  /* Border Colors */
+  --border-primary: #404040; /* slate-700 - Main borders */
+  --border-secondary: #525252; /* slate-600 - Focused borders */
+  --border-accent: var(--primary-500); /* primary-500 - Active/hover borders */
+
+  /* Status Colors */
+  --success: #22c55e; /* emerald-500 */
+  --success-bg: #22c55e2a;
+  --success-text: #4ade80; /* emerald-400 */
+
+  --warning: #f59e0b; /* amber-500 */
+  --warning-bg: rgba(245, 158, 11, 0.2);
+  --warning-text: #fbbf24; /* amber-400 */
+
+  --error: #ef4444; /* red-500 */
+  --error-bg: rgba(239, 68, 68, 0.2);
+  --error-text: #f87171; /* red-400 */
+
+  --info: #3b82f6; /* blue-500 */
+  --info-bg: rgba(59, 130, 246, 0.2);
+  --info-text: #60a5fa; /* blue-400 */
+
+  --inactive: #64748b; /* slate-500 */
+  --inactive-bg: #334155; /* slate-700 */
+  --inactive-text: #94a3b8; /* slate-400 */
+
+  /* Functional Colors */
+  --hover-overlay: rgba(16, 185, 129, 0.1);
+  --focus-ring: #10b981;
+  --shadow-sm: rgba(0, 0, 0, 0.2);
+  --shadow-md: rgba(0, 0, 0, 0.3);
+  --shadow-lg: rgba(0, 0, 0, 0.4);
+
+  /* Gradient Colors */
+  --gradient-primary: linear-gradient(to bottom, #0f172a, #1e293b);
+  --gradient-accent: linear-gradient(to bottom right, #059669, #047857);
+  --gradient-subtle: linear-gradient(
+    to right,
+    rgba(16, 185, 129, 0.1),
+    rgba(16, 185, 129, 0)
+  );
+}
+
+html,
+body {
+  height: 100%;
+  > #root {
+    height: 100%;
+    color: #fff;
+    background-color: var(--bg-elevated);
+
+    nav {
+      background-color: #f87171;
+      padding: 8px;
+      color: #020617;
+      display: flex;
+      gap: 8px;
+      > a {
+        border: 1px solid green;
+        padding: 8px;
+        background-color: #93c5fd;
+      }
+    }
+  }
 }

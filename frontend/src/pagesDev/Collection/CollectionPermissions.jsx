@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { save } from "../../service/service";
 import CTable from "../../components/CTable/Ctable";
+import CTabs from "../../components/CTabs/CTabs";
 import CBtn from "../../components/CBtn/CBtn";
 
 function CollectionPermissions({ collectionId = "" }) {
@@ -84,37 +85,56 @@ function CollectionPermissions({ collectionId = "" }) {
     },
   ];
 
+  const assignedRolesComponent = () => {
+    return (
+      <section className="c-role-permissions-section" key={count}>
+        <div className="c-item">
+          <CTable
+            collection={collectionName}
+            columns={collectionsColumns}
+            filter={calculateUnassignedFilter()}
+          />
+        </div>
+        <div className="c-item">
+          <CTable
+            expand="permissions_id"
+            collection={collectionAssignedName}
+            columns={collectionsAssignedColumns}
+            filter={calculateAssignedFilter()}
+          />
+        </div>
+      </section>
+    );
+  };
+
   return (
     <div>
-      Collection Permission List {collectionId}
-      <div className="c-options-container">
-        {actionsList.map((opt) => {
-          return (
-            <div
-              key={opt}
-              className={`c-option ${opt == actionTab && "c-active"}`}
-              onClick={() => {
-                setActionTab(opt);
-              }}
-            >
-              {opt}
-            </div>
-          );
-        })}
-      </div>
-      <div className="c-2-lists" key={count}>
-        <CTable
-          collection={collectionName}
-          columns={collectionsColumns}
-          filter={calculateUnassignedFilter()}
-        />
-        <CTable
-          expand="permissions_id"
-          collection={collectionAssignedName}
-          columns={collectionsAssignedColumns}
-          filter={calculateAssignedFilter()}
-        />
-      </div>
+      <span className="c-collection-title">Collection Permissions</span>
+      <br />
+      <br />
+      {/* List {collectionId} */}
+      <CTabs
+        tabState={actionTab}
+        setTabState={setActionTab}
+        tabs={[
+          {
+            name: "c",
+            slot: assignedRolesComponent(),
+          },
+          {
+            name: "r",
+            slot: assignedRolesComponent(),
+          },
+          {
+            name: "u",
+            slot: assignedRolesComponent(),
+          },
+          {
+            name: "d",
+            slot: assignedRolesComponent(),
+          },
+        ]}
+      />
     </div>
   );
 }

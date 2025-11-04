@@ -1,31 +1,44 @@
-#c-collection-page {
-  background-color: beige;
-  width: 100%;
-  height: 100%;
-  color: black;
-  padding: 8px;
+section.c-collection-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
 
-  h1 {
-    color: red;
+  .c-collection-title {
+    font-size: 18px;
+    line-height: 24px;
   }
 
-  .c-collection-header {
-    background-color: aliceblue;
-  }
-  .c-collection-fields {
-    background-color: beige;
-  }
-
-  .c-options-container {
+  .c-btn-section {
     display: flex;
-    gap: 4px;
-    margin: 4px 0;
+    gap: 16px;
 
-    .c-option {
-      padding: 2px 4px;
-      &.c-active {
-        border-bottom: 1px solid blue;
+    > .c-input {
+      width: 280px;
+    }
+  }
+
+  section.c-role-permissions-section {
+    display: flex;
+    gap: 16px;
+
+    .c-item {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      > .c-input {
+        width: 280px;
       }
+    }
+  }
+
+  .c-modal {
+    .c-tools {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
     }
   }
 }

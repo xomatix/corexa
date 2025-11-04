@@ -1,0 +1,36 @@
+.c-login-page {
+  background-color: var(--bg-elevated);
+  height: 100%;
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  .c-login-form {
+    height: fit-content;
+    width: 300px;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    border: 1px solid lab(100% 0 0 / 0.1);
+    background-color: var(--bg-primary);
+  }
+
+  .c-login-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    > span {
+      font-size: 14px;
+      color: lab(66.128% -0.0000298023 0.0000119209);
+    }
+    .c-title {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+    }
+  }
+}

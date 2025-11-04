@@ -15,6 +15,10 @@ function UsersList() {
   const [focusedRow, setFocusedRow] = useState(null);
   const [activeTab, setActiveTab] = useState("Permissions");
   const [selectedUser, setSelectedUser] = useState(null);
+  const [filter, setFilter] = useState({});
+
+  const isInsert =
+    focusedRow == null || focusedRow.id == null || focusedRow.id == undefined;
 
   const saveAction = async () => {
     if (focusedRow.id != null && focusedRow.id != undefined) {
@@ -29,6 +33,11 @@ function UsersList() {
     await save(collectionName, "delete", focusedRow);
     setCount(count + 1);
     setFocusedRow(null);
+  };
+
+  const calculateFilter = () => {
+    if (filter["searchText"] == undefined) return "";
+    return `username ilike '%${filter["searchText"]}%' or display_name ilike '%${filter["searchText"]}%' or email ilike '%${filter["searchText"]}%'`;
   };
 
   const collectionsColumns = [
@@ -67,14 +76,18 @@ function UsersList() {
   ];
 
   return (
-    <div>
-      Users
-      <CBtn onClick={() => setFocusedRow({})}>Insert User</CBtn>
+    <section className="c-users-list">
+      <span className="c-users-title">Add</span>
+      <div className="c-btn-section">
+        <CInput setState={setFilter} state={filter} path="searchText" />
+        <CBtn onClick={() => setFocusedRow({})}>Add</CBtn>
+      </div>
       <CTable
         key={count}
         columns={collectionsColumns}
         collection={collectionName}
         onClick={(row) => setSelectedUser(row)}
+        filter={calculateFilter()}
       />
       <CTabs
         tabState={activeTab}
@@ -140,12 +153,23 @@ function UsersList() {
           path="is_superuser"
           label="Is SUPERUSER"
         />
-        <CBtn onClick={saveAction}>Save</CBtn>
-        <CBtn onClick={deleteAction} confirm={true}>
-          Delete
-        </CBtn>
+        {isInsert && (
+          <CInput
+            setState={setFocusedRow}
+            state={focusedRow}
+            type="password"
+            path="password"
+            label="PASSWORD"
+          />
+        )}
+        <div className="c-tools">
+          <CBtn onClick={deleteAction} confirm={true}>
+            Delete
+          </CBtn>
+          <CBtn onClick={saveAction}>Save</CBtn>
+        </div>
       </CModal>
-    </div>
+    </section>
   );
 }
 

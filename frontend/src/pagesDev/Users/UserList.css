@@ -1,4 +1,44 @@
-.c-2-lists {
+section.c-users-list {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+
+  .c-users-title {
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .c-btn-section {
+    display: flex;
+    gap: 16px;
+
+    > .c-input {
+      width: 280px;
+    }
+  }
+
+  section.c-role-permissions-section {
+    display: flex;
+    gap: 16px;
+
+    .c-item {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      > .c-input {
+        width: 280px;
+      }
+    }
+  }
+
+  .c-modal {
+    .c-tools {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+  }
 }

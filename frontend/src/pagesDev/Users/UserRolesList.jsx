@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { save } from "../../service/service";
 import CTable from "../../components/CTable/Ctable";
 import CBtn from "../../components/CBtn/CBtn";
+import CInput from "../../components/CInput/CInput";
 
 function UserRolesList({ userId }) {
   const [count, setCount] = useState(0);
+  const [filter, setFilter] = useState({});
 
   const collectionName = "roles";
   const collectionAssignedName = "user_roles";
@@ -67,21 +69,31 @@ function UserRolesList({ userId }) {
     },
   ];
   const calculateAssignedFilter = () => {
-    return `user_id = '${userId}'`;
+    let txtFilter = "";
+    if (filter?.sta != null)
+      txtFilter = `and (role_id.name ilike '%${filter.sta}%' or role_id.description ilike '%${filter.sta}%')`;
+    return `user_id = '${userId}' ${txtFilter}`;
   };
   const calculateUnassignedFilter = () => {
-    return `id not in (select role_id from user_roles where user_id = '${userId}')`;
+    let txtFilter = "";
+    if (filter?.stu != null)
+      txtFilter = `and (name ilike '%${filter.stu}%' or description ilike '%${filter.stu}%')`;
+    return `id not in (select role_id from user_roles where user_id = '${userId}') ${txtFilter}`;
   };
 
   return (
-    <div>
-      Roles {userId}
-      <div className="c-2-lists" key={count}>
+    <section className="c-role-permissions-section" key={count}>
+      {/* Roles {userId} */}
+      <div className="c-item">
+        <CInput state={filter} setState={setFilter} path="stu" />
         <CTable
           collection={collectionName}
           columns={collectionsColumns}
           filter={calculateUnassignedFilter()}
         />
+      </div>
+      <div className="c-item">
+        <CInput state={filter} setState={setFilter} path="sta" />
         <CTable
           collection={collectionAssignedName}
           columns={collectionsAssignedColumns}
@@ -89,7 +101,7 @@ function UserRolesList({ userId }) {
           filter={calculateAssignedFilter()}
         />
       </div>
-    </div>
+    </section>
   );
 }
 

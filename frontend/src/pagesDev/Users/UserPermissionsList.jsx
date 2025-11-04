@@ -3,9 +3,11 @@ import CTable from "../../components/CTable/Ctable";
 import CBtn from "../../components/CBtn/CBtn";
 import "./UserList.css";
 import { save } from "../../service/service";
+import CInput from "../../components/CInput/CInput";
 
 function UserPermissionsList({ userId = null }) {
   const [count, setCount] = useState(0);
+  const [filter, setFilter] = useState({});
 
   const assignPermission = async (permission_id) => {
     await save(collectionAssignedName, "insert", {
@@ -30,10 +32,8 @@ function UserPermissionsList({ userId = null }) {
       field: "name",
     },
     {
-      header: "Is Superuser",
-      slot: ({ row }) => {
-        return <span title={row.description}>{row.description}</span>;
-      },
+      header: "Description",
+      field: "description",
     },
     {
       header: "Actions",
@@ -72,21 +72,31 @@ function UserPermissionsList({ userId = null }) {
   ];
 
   const calculateAssignedFilter = () => {
-    return `user_id = '${userId}'`;
+    let txtFilter = "";
+    if (filter?.sta != null)
+      txtFilter = `and (permissions_id.name ilike '%${filter.sta}%' or permissions_id.description ilike '%${filter.sta}%')`;
+    return `user_id = '${userId}' ${txtFilter}`;
   };
   const calculateUnassignedFilter = () => {
-    return `id not in (select permissions_id from ${collectionAssignedName} where user_id = '${userId}')`;
+    let txtFilter = "";
+    if (filter?.stu != null)
+      txtFilter = `and (name ilike '%${filter.stu}%' or description ilike '%${filter.stu}%')`;
+    return `id not in (select permissions_id from ${collectionAssignedName} where user_id = '${userId}') ${txtFilter}`;
   };
 
   return (
-    <div>
-      UsrPermList {userId}
-      <div className="c-2-lists" key={count}>
+    <section className="c-role-permissions-section" key={count}>
+      {/* UsrPermList {userId} */}
+      <div className="c-item">
+        <CInput state={filter} setState={setFilter} path="stu" />
         <CTable
           collection={collectionName}
           columns={collectionsColumns}
           filter={calculateUnassignedFilter()}
         />
+      </div>
+      <div className="c-item">
+        <CInput state={filter} setState={setFilter} path="sta" />
         <CTable
           expand="permissions_id"
           collection={collectionAssignedName}
@@ -94,7 +104,7 @@ function UserPermissionsList({ userId = null }) {
           filter={calculateAssignedFilter()}
         />
       </div>
-    </div>
+    </section>
   );
 }
 

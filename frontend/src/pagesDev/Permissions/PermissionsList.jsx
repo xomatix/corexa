@@ -5,6 +5,7 @@ import CModal from "../../components/CModal/CModal";
 import CInput from "../../components/CInput/CInput";
 import CBtn from "../../components/CBtn/CBtn";
 import { save } from "../../service/service";
+import "./PermissionsList.css";
 
 function PermissionsList() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ function PermissionsList() {
   const collectionName = "permissions";
   const [count, setCount] = useState(0);
   const [record, setRecord] = useState(null);
+  const [filter, setFilter] = useState({});
 
   const savePermission = async () => {
     if (record.id != null) {
@@ -27,6 +29,10 @@ function PermissionsList() {
     setCount(count + 1);
     setRecord(null);
   };
+  const calculateFilter = () => {
+    if (filter["searchText"] == undefined) return "";
+    return `name ilike '%${filter["searchText"]}%' or description ilike '%${filter["searchText"]}%'`;
+  };
 
   const collectionsColumns = [
     {
@@ -36,33 +42,30 @@ function PermissionsList() {
     {
       header: "Actions",
       slot: ({ row }) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
+        <CBtn
+          onClick={() => {
             setRecord(row);
           }}
         >
           Edit
-        </button>
+        </CBtn>
       ),
     },
   ];
 
   return (
-    <div>
-      Permissions<CBtn onClick={() => setRecord({})}>Insert permission</CBtn>
+    <section className="c-permissions-list">
+      <span className="c-permissions-title"> Permissions</span>
+      <div className="c-btn-section">
+        <CInput setState={setFilter} state={filter} path="searchText" />
+        <CBtn onClick={() => setRecord({})}>Add</CBtn>
+      </div>
       <CTable
         key={count}
         columns={collectionsColumns}
         collection={collectionName}
+        filter={calculateFilter()}
       ></CTable>
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-        }}
-      >
-        aaa {count}
-      </button>
       <CModal
         isOpen={record != null}
         onClose={() => setRecord(null)}
@@ -75,12 +78,16 @@ function PermissionsList() {
           path="description"
           label="Description"
         />
-        <CBtn onClick={savePermission}>Save</CBtn>
-        <CBtn onClick={deletePermission} confirm={true}>
-          Delete
-        </CBtn>
+        <div className="c-tools">
+          {record?.id != null && (
+            <CBtn confirm={true} onClick={deletePermission}>
+              Delete
+            </CBtn>
+          )}
+          <CBtn onClick={savePermission}>Save</CBtn>
+        </div>
       </CModal>
-    </div>
+    </section>
   );
 }
 

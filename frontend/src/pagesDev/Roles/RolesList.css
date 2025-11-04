@@ -1,10 +1,44 @@
-section.c-role-permissions-section {
+section.c-roles-list {
   display: flex;
-  flex-direction: row;
-
+  flex-direction: column;
   gap: 16px;
+  padding: 24px;
 
-  > .c-permissions-part {
-    width: 50%;
+  .c-roles-title {
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .c-btn-section {
+    display: flex;
+    gap: 16px;
+
+    > .c-input {
+      width: 280px;
+    }
+  }
+
+  section.c-role-permissions-section {
+    display: flex;
+    gap: 16px;
+
+    .c-item {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      > .c-input {
+        width: 280px;
+      }
+    }
+  }
+
+  .c-modal {
+    .c-tools {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
   }
 }

@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import CModal from "../../components/CModal/CModal";
 import { save } from "../../service/service";
 import { useNavigate } from "react-router-dom";
-
 import "./FieldPage.css";
 import CInput from "../../components/CInput/CInput";
 import CBtn from "../../components/CBtn/CBtn";
 
-function FieldPage({ windowIdent, field, setField = () => {} }) {
+function FieldPage({ field, setField = () => {} }) {
   const navigate = useNavigate();
   const isInsert = field.id === null || field.id === undefined;
   // const id = field.id ? field.id : "insert_field";
@@ -42,83 +41,92 @@ function FieldPage({ windowIdent, field, setField = () => {} }) {
       isOpen={field != null}
       onClose={() => setField(null)}
     >
-      <div style={{ marginBottom: "16px" }}>{JSON.stringify(field)}</div>
-      <>
-        <CInput
-          state={field}
-          setState={setField}
-          path="name"
-          label="Field Name"
-          type="text"
-          readOnly={!isInsert}
-        />
-        <CInput
-          state={field}
-          setState={setField}
-          path="label"
-          label="Label"
-          type="text"
-        />
-        <CInput
-          state={field}
-          setState={setField}
-          path="type"
-          label="Type"
-          type="lookup"
-          filter={calculateTypeFilter()}
-          readOnly={!isInsert}
-          collection="data_types"
-          setFieldMap={{
-            name: "type",
-          }}
-        />
-        <CInput
-          state={field}
-          setState={setField}
-          path="is_primary"
-          label="Is primary"
-          type="checkbox"
-          readOnly={!isInsert}
-        />
-        <CInput
-          state={field}
-          setState={setField}
-          path="is_nullable"
-          label="Is nullable"
-          type="checkbox"
-          readOnly={!isInsert}
-        />
-        <CInput
-          state={field}
-          setState={setField}
-          path="is_unique"
-          label="Is unique"
-          type="checkbox"
-          readOnly={!isInsert}
-        />
-        <CInput
-          state={field}
-          setState={setField}
-          path="foreign_table_name"
-          label="Foreign Table"
-          type="lookup"
-          filter={calculateFkFilter()}
-          collection="collections"
-          readOnly={!isInsert}
-          setFieldMap={{
-            name: "foreign_table_name",
-            id: "foreign_table",
-          }}
-        />
-      </>
-      <div>
-        <button onClick={() => setField(null)}>Close</button>
+      {/* <div style={{ marginBottom: "16px" }}>{JSON.stringify(field)}</div> */}
+
+      <CInput
+        state={field}
+        setState={setField}
+        path="name"
+        label="Field Name"
+        type="text"
+        readOnly={!isInsert}
+      />
+      <CInput
+        state={field}
+        setState={setField}
+        path="label"
+        label="Label"
+        type="text"
+      />
+      <CInput
+        state={field}
+        setState={setField}
+        path="type"
+        label="Type"
+        type="lookup"
+        filter={calculateTypeFilter()}
+        readOnly={!isInsert}
+        collection="data_types"
+        setFieldMap={{
+          name: "type",
+        }}
+      >
+        {(row) => (
+          <>
+            <span>{row.name}</span>
+            <br />
+            <span>{row.label}</span>
+            {/* {JSON.stringify(row)} */}
+          </>
+        )}
+      </CInput>
+      <CInput
+        state={field}
+        setState={setField}
+        path="is_primary"
+        label="Is primary"
+        type="checkbox"
+        readOnly={!isInsert}
+      />
+      <CInput
+        state={field}
+        setState={setField}
+        path="is_nullable"
+        label="Is nullable"
+        type="checkbox"
+        readOnly={!isInsert}
+      />
+      <CInput
+        state={field}
+        setState={setField}
+        path="is_unique"
+        label="Is unique"
+        type="checkbox"
+        readOnly={!isInsert}
+      />
+      <CInput
+        state={field}
+        setState={setField}
+        path="foreign_table_name"
+        label="Foreign Table"
+        type="lookup"
+        filter={calculateFkFilter()}
+        collection="collections"
+        readOnly={!isInsert}
+        setFieldMap={{
+          name: "foreign_table_name",
+          id: "foreign_table",
+        }}
+      />
+
+      <div className="c-tools">
+        <CBtn onClick={() => setField(null)}>Close</CBtn>
         {!isInsert && (
           <CBtn onClick={() => deleteAction()} confirm={true}>
             Delete
           </CBtn>
         )}
-        <button onClick={saveAction}>{isInsert ? "Add" : "Save"}</button>
+        <CBtn onClick={saveAction}>{isInsert ? "Add" : "Save"}</CBtn>
       </div>
     </CModal>
   );

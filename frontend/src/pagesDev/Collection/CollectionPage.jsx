@@ -7,6 +7,7 @@ import { setValue } from "../../service/state";
 import FieldPage from "./FieldPage";
 import CollectionPermissions from "./CollectionPermissions";
 import CBtn from "../../components/CBtn/CBtn";
+import CInput from "../../components/CInput/CInput";
 
 function CollectionPage() {
   const { id } = useParams();
@@ -107,51 +108,48 @@ function CollectionPage() {
     {
       header: "Actions",
       slot: ({ row }) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
+        <CBtn
+          onClick={() => {
             setField(row);
           }}
         >
           Edit
-        </button>
+        </CBtn>
       ),
     },
   ];
 
   return (
-    <div id="c-collection-page">
-      <h1>Collection {isInsert ? "create" : "edit/view"} page</h1>
-      {isInsert ? <h3>Create collection</h3> : <h3>ID: {id}</h3>}
-      <div>
-        <button onClick={saveAction}>
-          {isInsert ? "Add collection" : "Save"}
-        </button>
-        {!isInsert && (
-          <CBtn confirm={true} key={id} onClick={() => deleteAction()}>
-            Delete
-          </CBtn>
-        )}
-        {/* {!isInsert && <button onClick={deleteAction}>Delete</button>} */}
+    <section className="c-collection-page">
+      <span className="c-collection-title">
+        Collection {isInsert ? "create" : "edit/view"} page
+      </span>
+      {/* {isInsert ? <h3>Create collection</h3> : <h3>ID: {id}</h3>} */}
+      <div className="c-btn-section">
+        <CBtn onClick={saveAction}>Save</CBtn>
+
+        <CBtn confirm={true} key={id} onClick={() => deleteAction()}>
+          Delete
+        </CBtn>
       </div>
+
       {record && (
         <>
-          <input
+          <CInput
             key={id + "name"}
-            readOnly={!isInsert}
-            className="c-input"
-            value={record.name || ""}
-            onChange={(e) => onChange(e, "name")}
+            readOnly={true}
+            path="name"
+            setState={setRecord}
+            state={record}
           />
-          <br />
-          <input
+          <CInput
             key={id + "label"}
-            className="c-input"
-            value={record.label || ""}
-            onChange={(e) => onChange(e, "label")}
+            path="label"
+            setState={setRecord}
+            state={record}
           />
-          <br />
-          {!isInsert && <button onClick={invokeNewField}>Add field</button>}
+
+          {!isInsert && <CBtn onClick={invokeNewField}>Add field</CBtn>}
         </>
       )}
       {record && !isInsert && (
@@ -174,7 +172,7 @@ function CollectionPage() {
         />
       )}
       <CollectionPermissions collectionId={id} />
-    </div>
+    </section>
   );
 }
 

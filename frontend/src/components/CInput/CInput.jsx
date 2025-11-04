@@ -3,13 +3,7 @@ import "./CInput.css";
 import { select } from "../../service/service";
 
 const getNestedValue = (obj, path) => {
-  console.log("g nest val");
   const finalPath = path.includes(".") ? `expand.${path}` : path;
-  console.log("g nest path", finalPath);
-
-  finalPath.split(".").reduce((acc, part) => {
-    console.log("reduce ", acc, part);
-  }, obj);
 
   return finalPath.split(".").reduce((acc, part) => {
     if (acc && typeof acc === "object" && part in acc) {
@@ -70,6 +64,8 @@ function CInput({
   expand = "",
   filter = "",
   setFieldMap = {},
+  limit = 20,
+  order = "",
   children,
 }) {
   const [isLookupExp, setIsLookupExp] = useState(false);
@@ -90,8 +86,8 @@ function CInput({
     handleLookupLoadData();
   }, [filter]);
 
-  const parseValue = (e) => {
-    const rawValue = e.target.value;
+  const parseValue = (e, rawValue = null) => {
+    rawValue = rawValue == null ? e?.target?.value : rawValue;
     let finalValue = null;
 
     switch (type) {
@@ -121,7 +117,7 @@ function CInput({
   const handleLookupLoadData = async () => {
     if (collection == "") return;
 
-    const data = (await select(collection, filter, expand)).data;
+    const data = (await select(collection, filter, expand, order, limit)).data;
 
     if (data !== null && data !== undefined) {
       setLookupList(data);
@@ -135,18 +131,8 @@ function CInput({
     let newState = state;
     for (const key of Object.keys(setFieldMap)) {
       const rawValue = item[key];
-      const finalValue = key == path ? parseValue(rawValue) : rawValue;
-      // console.log(
-      //   Object.keys(setFieldMap),
-      //   "item",
-      //   item,
-      //   "rawVal",
-      //   rawValue,
-      //   "finalValue",
-      //   finalValue,
-      //   "path",
-      //   setFieldMap[key]
-      // );
+      const finalValue = key == path ? parseValue(e, rawValue) : rawValue;
+
       newState = setNestedValue(newState, setFieldMap[key], finalValue);
     }
 
@@ -160,11 +146,7 @@ function CInput({
   };
 
   return (
-    <div
-      className={`c-input ${readOnly && "c-readonly"} ${
-        type == "lookup" && "c-lookup"
-      } `}
-    >
+    <div className={`c-input ${readOnly && "c-readonly"} c-${type}`}>
       {label && <label htmlFor={path + label}>{label}</label>}
       {type === "checkbox" && (
         <input
@@ -178,7 +160,18 @@ function CInput({
           disabled={readOnly && type === "checkbox"}
         />
       )}
-      {type !== "checkbox" && (
+      {type === "textarea" && (
+        <textarea
+          rows={3}
+          id={path + label}
+          value={value}
+          onChange={handleChange}
+          onFocus={handleOnFocus}
+          readOnly={readOnly}
+          disabled={readOnly}
+        />
+      )}
+      {type !== "checkbox" && type !== "textarea" && (
         <input
           onBlur={handleOnBlur}
           id={path + label}

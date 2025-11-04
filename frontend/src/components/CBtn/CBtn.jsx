@@ -30,7 +30,7 @@ function CBtn({ children, onClick = async () => {}, confirm = false }) {
   };
 
   return (
-    <>
+    <div className="c-btn">
       <button className="c-btn" onClick={callBeforeOnClickAction}>
         {loading && <div class="c-spinner" aria-hidden="true"></div>}
         {!loading && children}
@@ -44,7 +44,7 @@ function CBtn({ children, onClick = async () => {}, confirm = false }) {
         <button onClick={callOnClickAction}>Yes</button>
         <button onClick={callCloseConfirm}>No</button>
       </CModal>
-    </>
+    </div>
   );
 }
 

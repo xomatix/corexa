@@ -1,6 +1,13 @@
 import "./App.css";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Link, Route, Router, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Link,
+  Route,
+  Router,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 
 import CollectionPage from "./pagesDev/Collection/CollectionPage";
 import CollectionList from "./pagesDev/Collection/CollectionList";
@@ -11,48 +18,54 @@ import RolesList from "./pagesDev/Roles/RolesList";
 import Login from "./pagesDev/Login/Login";
 import UsersList from "./pagesDev/Users/UsersList";
 import CTable from "./components/CTable/Ctable";
+import { getSessionToken, setSessionToken } from "./service/service";
 
 function App() {
-  const isLoggedIn =
-    sessionStorage.getItem("sessionId") != null &&
-    sessionStorage.getItem("sessionId").length > 0;
+  const isLoggedIn = getSessionToken() != null && getSessionToken().length > 0;
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    setSessionToken("");
+
+    navigate("/");
+    window.location.reload();
+  };
 
   return (
     <>
       <nav>
         <Link to={"/"}>Home</Link>
-        <Link to={"/login"}>Login</Link>
+        {!isLoggedIn && <Link to={"/login"}>Login</Link>}
         {isLoggedIn && (
           <>
-            <a
-              onClick={() => {
-                sessionStorage.clear();
-                window.location.href = "/";
-              }}
-            >
+            <a onClick={() => handleLogout()} style={{ cursor: "pointer" }}>
               Logout
             </a>
             <Link to={"/collections"}>Collections</Link>
-            {/* <Link to={"/collections/insert"}>Collection Add</Link> */}
             <Link to={"/permissions"}>Permissions</Link>
             <Link to={"/roles"}>Roles</Link>
             <Link to={"/users"}>Users</Link>
-            {/* <Link to={"/flowbuilder"}>Flow Builder</Link>
-            <Link to={"/formbuilder"}>Form Builder</Link> */}
           </>
         )}
       </nav>
 
       <Routes>
-        <Route path="/test" element={<CTable collection={"p_workout"} />} />
-        <Route path="/collections" element={<CollectionList />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/collections/:id" element={<CollectionPage />} />
-        <Route path="/permissions" element={<PermissionsList />} />
-        <Route path="/roles" element={<RolesList />} />
-        <Route path="/users" element={<UsersList />} />
-        <Route path="/flowbuilder" element={<FlowBuilder />} />
-        <Route path="/formbuilder" element={<FormBuilder />} />
+        {isLoggedIn ? (
+          <>
+            <Route path="/collections" element={<CollectionList />} />
+            <Route path="/collections/:id" element={<CollectionPage />} />
+            <Route path="/permissions" element={<PermissionsList />} />
+            <Route path="/roles" element={<RolesList />} />
+            <Route path="/users" element={<UsersList />} />
+            <Route path="/flowbuilder" element={<FlowBuilder />} />
+            <Route path="/formbuilder" element={<FormBuilder />} />
+          </>
+        ) : (
+          // Optional: Redirect to login if not authenticated
+          <Route path="/*" element={<Login />} />
+        )}
       </Routes>
     </>
   );

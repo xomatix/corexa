@@ -4,7 +4,7 @@ import "./CTabs.css";
 function CTabs({ tabState, setTabState = () => {}, tabs = [] }) {
   const getSelectedTabContent = () => {
     const idx = tabs.map((tab) => tab["name"]).indexOf(tabState);
-    return tabs[idx].slot;
+    return tabs[idx]?.slot;
   };
 
   return (

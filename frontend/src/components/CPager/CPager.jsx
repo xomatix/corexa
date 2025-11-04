@@ -1,5 +1,4 @@
 import React from "react";
-import CRow from "../../uiComponents/CRow/CRow";
 import "./CPager.css";
 
 function CPager({ currentPage = 1, setCurrentPage = () => {}, pagesNo = 1 }) {
@@ -17,7 +16,7 @@ function CPager({ currentPage = 1, setCurrentPage = () => {}, pagesNo = 1 }) {
   };
 
   return (
-    <CRow className={"c-pager"}>
+    <div className="c-pager">
       <div className="c-prev-page" onClick={() => setPrevPage()}>
         <img src="/icons/arrowLeft.svg" />
       </div>
@@ -27,7 +26,7 @@ function CPager({ currentPage = 1, setCurrentPage = () => {}, pagesNo = 1 }) {
       <div className="c-next-page" onClick={() => setNextPage()}>
         <img src="/icons/arrowRight.svg" />
       </div>
-    </CRow>
+    </div>
   );
 }
 

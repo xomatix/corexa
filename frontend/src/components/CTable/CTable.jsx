@@ -68,7 +68,8 @@ function CTable({
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div style={{ color: "red" }}>{error}</div>;
-  if (!rows || rows.length === 0) return <div>No rows found</div>;
+  if (!rows || rows.length === 0)
+    return <div>No rows found or insufficient permissions</div>;
 
   if (columns.length == 0) {
     return (
@@ -94,17 +95,16 @@ function CTable({
 
   return (
     <>
-      <table className="c-table">
-        <thead className="c-th">
-          <tr>
+      <div className="c-table-container">
+        <table className="c-table">
+          <tr className="c-th">
             {columns.map((col) => (
               <th key={col.header} className="c-th-cell">
                 {col.header}
               </th>
             ))}
           </tr>
-        </thead>
-        <tbody>
+
           {rows.map((row, index) => (
             <tr
               key={row._uuid + "_" + index}
@@ -123,8 +123,8 @@ function CTable({
               ))}
             </tr>
           ))}
-        </tbody>
-      </table>
+        </table>
+      </div>
       <CPager
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
