@@ -1,5 +1,5 @@
 .c-table-container {
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border);
   border-radius: 8px;
 }
 
@@ -11,8 +11,7 @@ table.c-table {
 
   > tr.c-th {
     > th.c-th-cell {
-      background-color: var(--neutral-950);
-      color: #fff;
+      background-color: var(--bg);
       text-align: left;
       font-size: 14px;
       padding: 8px;
@@ -20,12 +19,11 @@ table.c-table {
   }
 
   > tr.c-tr {
-    background-color: var(--neutral-950);
-    color: #fff;
+    background-color: var(--bg);
     font-size: 14px;
     transition: all ease-in-out 180ms;
     height: 48px;
-    border-top: 1px solid var(--border-primary);
+    border-top: 1px solid var(--border);
 
     > td.c-tr-cell {
       padding: 8px;
@@ -35,7 +33,7 @@ table.c-table {
       overflow: hidden;
     }
     &:hover {
-      background-color: var(--neutral-900);
+      background-color: var(--highlight);
     }
 
     > td.c-tr-cell > div.c-btn {

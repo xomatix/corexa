@@ -150,6 +150,7 @@ function CInput({
       {label && <label htmlFor={path + label}>{label}</label>}
       {type === "checkbox" && (
         <input
+          className={`${Boolean(getNestedValue(state, path)) && "c-checked"}`}
           onBlur={handleOnBlur}
           id={path + label}
           type={type}

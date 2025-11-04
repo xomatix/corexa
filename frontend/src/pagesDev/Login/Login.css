@@ -1,12 +1,9 @@
 .c-login-page {
-  background-color: var(--bg-elevated);
   height: 100%;
-  display: flex;
-
-  justify-content: center;
-  align-items: center;
+  /* display: flex; */
 
   .c-login-form {
+    margin: 100px auto;
     height: fit-content;
     width: 300px;
     border-radius: 8px;
@@ -14,8 +11,12 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
-    border: 1px solid lab(100% 0 0 / 0.1);
-    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    background-color: var(--bg);
+  }
+
+  button {
+    width: 100%;
   }
 
   .c-login-info {
@@ -25,10 +26,10 @@
 
     > span {
       font-size: 14px;
-      color: lab(66.128% -0.0000298023 0.0000119209);
+      color: var(--text-muted);
     }
     .c-title {
-      color: #fff;
+      color: var(--text);
       font-size: 16px;
       font-weight: 600;
     }

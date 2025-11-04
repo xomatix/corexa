@@ -2,9 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
   font-size: 14px;
-  color: var(--slate-200);
 
   &.c-lookup {
     position: relative;
@@ -13,7 +11,6 @@
   label {
     font-size: 14px;
     font-weight: 500;
-    color: #fff;
   }
 
   input,
@@ -21,9 +18,8 @@
     width: 100%;
     height: 36px;
     border-radius: 0.375rem;
-    border: 1px solid lab(100% 0 0/0.15);
-    background-color: #151515;
-    color: var(--slate-100);
+    border: 1px solid var(--border);
+    background-color: var(--bg);
     padding: 4px 12px;
     font-size: 14px;
     line-height: 20px;
@@ -34,9 +30,9 @@
 
   input:focus,
   textarea:focus {
-    border-color: lab(48.496% 0 0);
+    background-color: var(--bg-light);
     outline: none;
-    box-shadow: 0 0 0 3px lab(48.44% 0 -0.01 / 0.459);
+    box-shadow: 0 0 0 2px var(--border-muted);
   }
 
   .c-lookup {
@@ -45,14 +41,50 @@
 
   &.c-checkbox {
     display: flex;
-    flex-direction: row-reverse;
-    justify-content: start;
+    flex-direction: row;
+    justify-content: space-between;
     gap: 16px;
 
-    > input[type="checkbox"] {
-      width: 14px;
-      height: 14px;
-      margin: auto 0;
+    input[type="checkbox"] {
+      appearance: none;
+      position: relative;
+      width: 40px;
+      height: 22px;
+      border-radius: 20px;
+      background-color: var(--bg-dark);
+      outline: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        background-color: var(--bg-dark);
+        transition: background-color 0.3s ease;
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        transition: transform 300ms ease;
+      }
+
+      &:checked::before {
+        background-color: var(--primary);
+      }
+
+      &:checked::after {
+        transform: translateX(18px);
+        background-color: var(--bg-light);
+      }
     }
   }
 
@@ -67,33 +99,41 @@
     list-style-type: none;
     margin: 0;
     padding: 4px 0;
-    background-color: var(--slate-800);
-    border: 1px solid var(--slate-700);
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-muted);
     border-radius: 0.375rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     z-index: 10;
   }
 
   ul.c-lookup-list li.c-lookup-item {
-    color: var(--slate-100);
-    padding: 6px 10px;
+    color: var(--text);
+    padding: 4px 8px;
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.15s;
+
+    &:not(:first-child) {
+      border-top: 1px solid var(--border-muted);
+    }
   }
 
-  ul.c-lookup-list li.c-lookup-item:nth-child(2n) {
-    background-color: var(--slate-900);
-  }
+  /* ul.c-lookup-list li.c-lookup-item:nth-child(2n) {
+    background-color: var(--bg);
+  } */
 
   ul.c-lookup-list li.c-lookup-item:hover {
-    background-color: var(--slate-700);
+    background-color: var(--highlight);
+  }
+
+  &.c-readonly label {
+    color: var(--text-muted);
   }
 
   &.c-readonly input,
   &.c-readonly textarea {
-    background-color: #1e293b;
-    border-color: #334155;
-    color: #94a3b8;
+    background-color: var(--bg);
+    border-color: var(--border-muted);
+    color: var(--text-muted);
   }
 }

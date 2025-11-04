@@ -77,7 +77,7 @@ function UsersList() {
 
   return (
     <section className="c-users-list">
-      <span className="c-users-title">Add</span>
+      <span className="c-users-title">Users</span>
       <div className="c-btn-section">
         <CInput setState={setFilter} state={filter} path="searchText" />
         <CBtn onClick={() => setFocusedRow({})}>Add</CBtn>

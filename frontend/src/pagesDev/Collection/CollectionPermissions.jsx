@@ -3,20 +3,28 @@ import { save } from "../../service/service";
 import CTable from "../../components/CTable/Ctable";
 import CTabs from "../../components/CTabs/CTabs";
 import CBtn from "../../components/CBtn/CBtn";
+import CInput from "../../components/CInput/CInput";
 
 function CollectionPermissions({ collectionId = "" }) {
   const [count, setCount] = useState(0);
   const [actionTab, setActionTab] = useState("r");
+  const [filter, setFilter] = useState({});
   const actionsList = ["c", "r", "u", "d"];
 
   const collectionName = "permissions";
   const collectionAssignedName = "collection_permissions";
 
   const calculateAssignedFilter = () => {
-    return `collections_id = '${collectionId}' and action = '${actionTab}'`;
+    let txtFilter = "";
+    if (filter?.sta != null && filter?.sta != undefined)
+      txtFilter = `and (permissions_id.name ilike '%${filter.sta}%' or permissions_id.description ilike '%${filter.sta}%')`;
+    return `collections_id = '${collectionId}' and action = '${actionTab}' ${txtFilter}`;
   };
   const calculateUnassignedFilter = () => {
-    return `id not in (select permissions_id from ${collectionAssignedName} where collections_id = '${collectionId}' and action = '${actionTab}')`;
+    let txtFilter = "";
+    if (filter?.stu != null)
+      txtFilter = `and (name ilike '%${filter.stu}%' or description ilike '%${filter.stu}%')`;
+    return `id not in (select permissions_id from ${collectionAssignedName} where collections_id = '${collectionId}' and action = '${actionTab}') ${txtFilter}`;
   };
 
   const assignPermission = async (permission_id) => {
@@ -89,6 +97,12 @@ function CollectionPermissions({ collectionId = "" }) {
     return (
       <section className="c-role-permissions-section" key={count}>
         <div className="c-item">
+          <CInput
+            state={filter}
+            setState={setFilter}
+            path="stu"
+            label="Search"
+          />
           <CTable
             collection={collectionName}
             columns={collectionsColumns}
@@ -96,6 +110,12 @@ function CollectionPermissions({ collectionId = "" }) {
           />
         </div>
         <div className="c-item">
+          <CInput
+            state={filter}
+            setState={setFilter}
+            path="sta"
+            label="Search"
+          />
           <CTable
             expand="permissions_id"
             collection={collectionAssignedName}
@@ -109,7 +129,7 @@ function CollectionPermissions({ collectionId = "" }) {
 
   return (
     <div>
-      <span className="c-collection-title">Collection Permissions</span>
+      <span className="c-collection-title">Permissions</span>
       <br />
       <br />
       {/* List {collectionId} */}

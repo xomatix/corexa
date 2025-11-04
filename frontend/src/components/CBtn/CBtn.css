@@ -11,10 +11,11 @@ button.c-btn {
   border-radius: 8px;
   border: 0;
   font-weight: 500;
-  color: #fff;
+  color: var(--bg-light);
   font-size: 14px;
   line-height: 18px;
-  background-color: var(--primary-700);
+  background-color: var(--primary);
+  border: 1px solid var(--primary);
   transition: all 180ms ease;
   cursor: pointer;
   .c-spinner {
@@ -29,7 +30,8 @@ button.c-btn {
   }
 
   &:hover {
-    background-color: var(--primary-600);
+    background-color: var(--bg-light);
+    color: var(--primary);
   }
 }
 @keyframes spin {

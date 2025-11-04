@@ -3,9 +3,9 @@
 
   > .c-tabs-header {
     display: flex;
-    background-color: #262626;
-    padding: 3px;
-    color: var(--text-tertiary);
+    background-color: var(--bg);
+    padding: 4px;
+    color: var(--text-muted);
     width: min-content;
     border-radius: 10px;
     margin-bottom: 8px;
@@ -13,15 +13,16 @@
     > .c-tab {
       cursor: pointer;
       padding: 4px 8px;
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 600;
       border: 1px solid transparent;
       transition: all 180ms ease;
 
       &.c-tab-active {
-        color: #fff;
+        color: var(--text);
+        border-color: var(--highlight);
         border-radius: 8px;
-        border-color: var(--border-secondary);
+        background-color: var(--bg-light);
       }
     }
   }

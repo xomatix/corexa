@@ -39,10 +39,6 @@ function CollectionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const onChange = (e, field) => {
-    setRecord({ ...record, [field]: e.target.value });
-  };
-
   const saveAction = async () => {
     const resp = await save(
       "collections",
@@ -59,7 +55,12 @@ function CollectionPage() {
     navigate(`/collections`);
   };
   const invokeNewField = () => {
-    setField({ collection_id: id, is_primary: false });
+    setField({
+      collection_id: id,
+      is_primary: false,
+      is_nullable: true,
+      is_unique: true,
+    });
   };
 
   const fieldsColumns = [
@@ -121,9 +122,7 @@ function CollectionPage() {
 
   return (
     <section className="c-collection-page">
-      <span className="c-collection-title">
-        Collection {isInsert ? "create" : "edit/view"} page
-      </span>
+      <span className="c-collection-title">Collection edit page</span>
       {/* {isInsert ? <h3>Create collection</h3> : <h3>ID: {id}</h3>} */}
       <div className="c-btn-section">
         <CBtn onClick={saveAction}>Save</CBtn>
@@ -138,11 +137,13 @@ function CollectionPage() {
           <CInput
             key={id + "name"}
             readOnly={true}
+            label="Name"
             path="name"
             setState={setRecord}
             state={record}
           />
           <CInput
+            label="Label"
             key={id + "label"}
             path="label"
             setState={setRecord}

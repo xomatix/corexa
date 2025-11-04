@@ -117,7 +117,15 @@ function FieldPage({ field, setField = () => {} }) {
           name: "foreign_table_name",
           id: "foreign_table",
         }}
-      />
+      >
+        {(row) => (
+          <>
+            <span>{row.name}</span>
+            <br />
+            <span>{row.label}</span>
+          </>
+        )}
+      </CInput>
 
       <div className="c-tools">
         <CBtn onClick={() => setField(null)}>Close</CBtn>

@@ -35,17 +35,21 @@ function App() {
   return (
     <>
       <nav>
-        <Link to={"/"}>Home</Link>
+        {/* <Link to={"/"}>Home</Link> */}
         {!isLoggedIn && <Link to={"/login"}>Login</Link>}
         {isLoggedIn && (
           <>
-            <a onClick={() => handleLogout()} style={{ cursor: "pointer" }}>
-              Logout
-            </a>
             <Link to={"/collections"}>Collections</Link>
             <Link to={"/permissions"}>Permissions</Link>
             <Link to={"/roles"}>Roles</Link>
             <Link to={"/users"}>Users</Link>
+            <a
+              className="c-last"
+              onClick={() => handleLogout()}
+              style={{ cursor: "pointer" }}
+            >
+              Logout
+            </a>
           </>
         )}
       </nav>
