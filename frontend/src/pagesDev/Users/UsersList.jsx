@@ -4,7 +4,7 @@ import CTable from "../../components/CTable/Ctable";
 import CModal from "../../components/CModal/CModal";
 import CInput from "../../components/CInput/CInput";
 import CBtn from "../../components/CBtn/CBtn";
-import { save } from "../../service/service";
+import { invokeSelect, save } from "../../service/service";
 import CTabs from "../../components/CTabs/CTabs";
 import UserPermissionsList from "./UserPermissionsList";
 import UserRolesList from "./UserRolesList";
@@ -15,6 +15,7 @@ function UsersList() {
   const [focusedRow, setFocusedRow] = useState(null);
   const [activeTab, setActiveTab] = useState("Permissions");
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUserPassword, setSelectedUserPassword] = useState(null);
   const [filter, setFilter] = useState({});
 
   const isInsert =
@@ -22,12 +23,27 @@ function UsersList() {
 
   const saveAction = async () => {
     if (focusedRow.id != null && focusedRow.id != undefined) {
+      // await invokeSelect("save_user", focusedRow);
       await save(collectionName, "update", focusedRow);
     } else {
+      // await invokeSelect("save_user", focusedRow);
       await save(collectionName, "insert", focusedRow);
     }
     setCount(count + 1);
     setFocusedRow(null);
+  };
+  const savePasswordAction = async () => {
+    const resp = await invokeSelect("save_user_password", selectedUserPassword);
+
+    console.log(resp, resp.data);
+    const data = resp.data;
+
+    if (data.length > 0 && data[0].error != undefined) {
+      alert(data[0].error);
+    } else {
+      setCount(count + 1);
+      setSelectedUserPassword(null);
+    }
   };
   const deleteAction = async () => {
     await save(collectionName, "delete", focusedRow);
@@ -153,20 +169,42 @@ function UsersList() {
           path="is_superuser"
           label="Is SUPERUSER"
         />
-        {isInsert && (
-          <CInput
-            setState={setFocusedRow}
-            state={focusedRow}
-            type="password"
-            path="password"
-            label="PASSWORD"
-          />
-        )}
         <div className="c-tools">
           <CBtn onClick={deleteAction} confirm={true}>
             Delete
           </CBtn>
+          {focusedRow?.id != null && focusedRow?.id != undefined && (
+            <CBtn onClick={() => setSelectedUserPassword(focusedRow)}>
+              Change password
+            </CBtn>
+          )}
           <CBtn onClick={saveAction}>Save</CBtn>
+        </div>
+      </CModal>
+      <CModal
+        isOpen={selectedUserPassword != null}
+        onClose={() => setSelectedUserPassword(null)}
+        header={"Change password"}
+      >
+        {JSON.stringify(selectedUserPassword)}
+        <CInput
+          setState={setSelectedUserPassword}
+          state={selectedUserPassword}
+          type="password"
+          path="password"
+          label="Password"
+        />
+        <CInput
+          setState={setSelectedUserPassword}
+          state={selectedUserPassword}
+          type="password"
+          path="password2"
+          label="Confirm password"
+        />
+        <div className="c-tools">
+          <div />
+
+          <CBtn onClick={savePasswordAction}>Change</CBtn>
         </div>
       </CModal>
     </section>
