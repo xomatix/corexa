@@ -39,7 +39,7 @@ INSERT INTO data_types (name, label) VALUES
     ('date', 'Calendar date (YYYY-MM-DD)'),
     ('time', 'Time without timezone'),
     ('timestamp', 'Date and time without timezone'),
-    ('timestamp_tz', 'Date and time with timezone'),
+    ('timestamptz', 'Date and time with timezone'),
     
     ('json', 'JSON document storage'),
     ('jsonb', 'Optimized binary JSON storage'),

@@ -1,3 +1,5 @@
 {
+  "baseApiUrlLocal": "http://localhost:8080",
+  "baseApiUrlGlobal": "http://138.2.170.15/api",
   "baseApiUrl": "http://localhost:8080"
 }

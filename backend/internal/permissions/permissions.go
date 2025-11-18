@@ -4,6 +4,18 @@ import (
 	"corexa/internal/models"
 	"database/sql"
 	"fmt"
+	"sync"
+	"time"
+)
+
+type TimedSessionUser struct {
+	validTo     time.Time
+	sessionUser models.SessionUser
+}
+
+var (
+	SessionsCache   = make(map[string]TimedSessionUser)
+	SessionsCacheMx = &sync.RWMutex{}
 )
 
 // #TODO
@@ -68,6 +80,23 @@ func LogInUser(db *sql.DB, username string, password string) (models.SessionUser
 
 func GetSessionUser(db *sql.DB, sessionId string) (models.SessionUser, error) {
 
+	SessionsCacheMx.RLock()
+	cachedUsr, ok := SessionsCache[sessionId]
+	SessionsCacheMx.RUnlock()
+
+	if ok {
+		if cachedUsr.validTo.After(time.Now()) {
+			return cachedUsr.sessionUser, nil
+		}
+
+		SessionsCacheMx.Lock()
+		delete(SessionsCache, sessionId)
+		SessionsCacheMx.Unlock()
+	}
+
+	SessionsCacheMx.Lock()
+	defer SessionsCacheMx.Unlock()
+
 	obtainUserQuery := `select 
 		u.id, u.username, coalesce(u.display_name, ''),coalesce(u.email, ''), u.is_superuser
 	from sessions s join users u on u.id = s.users_id 
@@ -81,12 +110,20 @@ func GetSessionUser(db *sql.DB, sessionId string) (models.SessionUser, error) {
 		return models.SessionUser{}, fmt.Errorf("Error obtaining session user: %s", err)
 	}
 	sessionUsr.SessionID = sessionId
+	SessionsCache[sessionId] = TimedSessionUser{
+		sessionUser: sessionUsr,
+		validTo:     time.Now().Add(time.Duration(time.Second * 60)),
+	}
 
 	return sessionUsr, nil
 }
 
 func HasPermission(db *sql.DB, sessionId, collectionId, action string) (bool, error) {
 	usr, err := GetSessionUser(db, sessionId)
+
+	if usr.IsSuperuser {
+		return usr.IsSuperuser, nil
+	}
 
 	if len(collectionId) != 36 ||
 		string(collectionId[8]) != "-" ||

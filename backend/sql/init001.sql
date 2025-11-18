@@ -31,7 +31,7 @@ CREATE INDEX IF NOT EXISTS idx_fields_label ON fields (label);
 CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     username varchar(255) UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
+    password_hash TEXT,
     display_name TEXT,
     email varchar(320),
     is_active BOOLEAN NOT NULL DEFAULT FALSE,

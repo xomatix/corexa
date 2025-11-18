@@ -22,7 +22,7 @@ func ScanRowsToMaps(rows *sql.Rows) ([]map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to get columns: %w", err)
 	}
 	colCount := len(columns)
-	var results []map[string]interface{}
+	results := make([]map[string]interface{}, 0)
 
 	for rows.Next() {
 		values := make([]interface{}, colCount)

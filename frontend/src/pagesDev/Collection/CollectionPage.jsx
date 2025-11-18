@@ -59,7 +59,7 @@ function CollectionPage() {
       collection_id: id,
       is_primary: false,
       is_nullable: true,
-      is_unique: true,
+      is_unique: false,
     });
   };
 
@@ -172,7 +172,7 @@ function CollectionPage() {
           setField={setField}
         />
       )}
-      <CollectionPermissions collectionId={id} />
+      {record?.name != "users" && <CollectionPermissions collectionId={id} />}
     </section>
   );
 }

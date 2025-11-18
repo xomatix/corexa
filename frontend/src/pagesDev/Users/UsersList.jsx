@@ -186,7 +186,7 @@ function UsersList() {
         onClose={() => setSelectedUserPassword(null)}
         header={"Change password"}
       >
-        {JSON.stringify(selectedUserPassword)}
+        {/* {JSON.stringify(selectedUserPassword)} */}
         <CInput
           setState={setSelectedUserPassword}
           state={selectedUserPassword}
