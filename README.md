@@ -43,3 +43,9 @@ bun install
 cd frontend
 bun run dev
 ```
+
+## Using the system
+
+Go to [localhost:5173](localhost:5173)
+
+LogIn as user admin with _same_ password
