@@ -34,6 +34,16 @@ function FieldPage({ field, setField = () => {} }) {
     if (field["foreign_table_name"] == undefined) return "";
     return `name ilike '%${field["foreign_table_name"]}%' or label ilike '%${field["foreign_table_name"]}%'`;
   };
+  const calculateShowRegex = () => {
+    if (
+      field["type"] != null &&
+      field["type"] != undefined &&
+      (field["type"].includes("varchar") ||
+        field["type"].includes("text") ||
+        field["type"].includes("tsvector"))
+    )
+      return true;
+  };
 
   return (
     <CModal
@@ -41,7 +51,7 @@ function FieldPage({ field, setField = () => {} }) {
       isOpen={field != null}
       onClose={() => setField(null)}
     >
-      {/* <div style={{ marginBottom: "16px" }}>{JSON.stringify(field)}</div> */}
+      <div style={{ marginBottom: "16px" }}>{JSON.stringify(field)}</div>
 
       <CInput
         state={field}
@@ -126,6 +136,14 @@ function FieldPage({ field, setField = () => {} }) {
           </>
         )}
       </CInput>
+      {calculateShowRegex() && (
+        <CInput
+          state={field}
+          setState={setField}
+          path="validation"
+          label="Validation (regex)"
+        />
+      )}
 
       <div className="c-tools">
         <CBtn onClick={() => setField(null)}>Close</CBtn>

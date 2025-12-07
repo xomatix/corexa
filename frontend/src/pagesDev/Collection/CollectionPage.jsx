@@ -93,6 +93,10 @@ function CollectionPage() {
       field: "is_unique",
     },
     {
+      header: "Validation",
+      field: "validation",
+    },
+    {
       header: "Foreign table",
       field: "foreign_table",
       slot: ({ row }) => (

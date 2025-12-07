@@ -410,6 +410,22 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 		if fieldCfg.IsNotNull && val == nil {
 			return nil, fmt.Errorf("field '%s' cannot be null", key)
 		}
+
+		if fieldCfg.Validation != "" && val != nil {
+			re, err := regexp.Compile(fieldCfg.Validation)
+			if err != nil {
+				return nil, fmt.Errorf("invalid regex for field '%s': %v", key, err)
+			}
+			strVal, ok := val.(string)
+			if !ok {
+				return nil, fmt.Errorf("field '%s' must be a string for validation", key)
+			}
+
+			if !re.MatchString(strVal) {
+				return nil, fmt.Errorf("field '%s' does not match required pattern", key)
+			}
+		}
+
 		// session user macro
 		if val, ok := req.Data[key].(string); ok {
 			sessionUsr, err := permissions.GetSessionUser(db, req.SessionId)

@@ -115,7 +115,7 @@ func SaveCollection(db *sql.DB, req models.SaveRequest) (interface{}, error) {
 			if col == pkField {
 				continue
 			}
-			if col != "label" {
+			if col != "label" && col != "validation" {
 				continue
 			}
 			setClauses = append(setClauses, fmt.Sprintf("%s = $%d", pq.QuoteIdentifier(col), i))

@@ -16,6 +16,7 @@ type FieldConfig struct {
 	IsNotNull    bool   `json:"is_not_null"`
 	IsUnique     bool   `json:"is_unique"`
 	ForeignTable string `json:"foreign_table"`
+	Validation   string `json:"validation"`
 }
 
 type CollectionConfig struct {
@@ -52,7 +53,7 @@ func LoadConfig(db *sql.DB) error {
 	}
 
 	// Load fields
-	rows, err = db.Query("SELECT id, collection_id, name, coalesce(label, ''), type, is_primary, is_nullable, is_unique, coalesce(foreign_table::text, '') FROM fields")
+	rows, err = db.Query("SELECT id, collection_id, name, coalesce(label, ''), type, is_primary, is_nullable, is_unique, coalesce(foreign_table::text, ''), coalesce(validation, '') FROM fields")
 	if err != nil {
 		return err
 	}
@@ -61,7 +62,7 @@ func LoadConfig(db *sql.DB) error {
 	var fields []FieldConfig
 	for rows.Next() {
 		var f FieldConfig
-		if err := rows.Scan(&f.ID, &f.CollectionID, &f.Name, &f.Label, &f.Type, &f.IsPrimary, &f.IsNotNull, &f.IsUnique, &f.ForeignTable); err != nil {
+		if err := rows.Scan(&f.ID, &f.CollectionID, &f.Name, &f.Label, &f.Type, &f.IsPrimary, &f.IsNotNull, &f.IsUnique, &f.ForeignTable, &f.Validation); err != nil {
 			return err
 		}
 		fields = append(fields, f)
@@ -223,6 +224,16 @@ func LoadConfig(db *sql.DB) error {
 				IsNotNull:    true,
 				IsUnique:     false,
 				ForeignTable: "core_collections",
+			},
+			"validation": {
+				ID:           "validation",
+				CollectionID: "core_fields",
+				Name:         "validation",
+				Label:        "Validation",
+				Type:         "string",
+				IsPrimary:    false,
+				IsNotNull:    false,
+				IsUnique:     false,
 			},
 		},
 	}

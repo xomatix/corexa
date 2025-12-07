@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS fields (
     is_nullable BOOLEAN NOT NULL DEFAULT TRUE,
     is_unique BOOLEAN NOT NULL DEFAULT FALSE,
     foreign_table uuid DEFAULT NULL,
+    validation VARCHAR(255),
     CONSTRAINT fk_collection
         FOREIGN KEY(collection_id)
         REFERENCES collections(id)
