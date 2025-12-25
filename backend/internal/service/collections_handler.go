@@ -264,6 +264,13 @@ func addColumnQuery(db *sql.DB, req models.SaveRequest, tableName string) (strin
 		return "", fmt.Errorf("Error obtaining collection from given collection_id: %s err: %w", fieldConfig.CollectionID, err)
 	}
 
+	// if fieldConfig.Validation != "" {
+	// 	_, err = regexp.Compile(fieldConfig.Validation)
+	// 	if err != nil {
+	// 		return "", fmt.Errorf("validation field must have correct regex syntax (field_name: %s, validation: %s)", fieldConfig.Name, fieldConfig.Validation)
+	// 	}
+	// }
+
 	createPrimaryKey := true
 	for _, v := range collectionConfig.Fields {
 		if v.IsPrimary && strings.ToLower(v.Type) == "uuid" {

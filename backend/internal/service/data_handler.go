@@ -404,9 +404,7 @@ func HandleInvokeSelect(db *sql.DB, req models.InvokeSelectRequest, sessionUser 
 func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig) (interface{}, error) {
 	for key, val := range req.Data {
 		fieldCfg, _ := cfg.Fields[key]
-		// if !ok {
-		// 	return nil, fmt.Errorf("field '%s' does not exist in collection '%s'", key, cfg.Name)
-		// }
+
 		if fieldCfg.IsNotNull && val == nil {
 			return nil, fmt.Errorf("field '%s' cannot be null", key)
 		}
@@ -455,7 +453,7 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 			req.Data[key] = replacer.Replace(val)
 		}
 	}
-	// #TODO
+
 	switch req.Action {
 	case "insert":
 		var columns []string
@@ -473,24 +471,70 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 			i++
 		}
 
+		trx, err := db.Begin()
+		if err != nil {
+			return nil, err
+		}
 		query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) RETURNING *",
 			pq.QuoteIdentifier(cfg.Name),
 			strings.Join(columns, ", "),
 			strings.Join(placeholders, ", "),
 		)
 		log.Printf("Executing SQL: %s with args: %v", query, args)
-		rows, err := db.Query(query, args...)
+		rows, err := trx.Query(query, args...)
 		if err != nil {
 			return nil, err
 		}
 		defer rows.Close()
+
 		results, err := ScanRowsToMaps(rows)
 		if err != nil {
 			return nil, err
 		}
+
 		if len(results) > 0 {
+			sessionUsr, err := permissions.GetSessionUser(db, req.SessionId)
+			if err != nil {
+				return nil, err
+			}
+			var recordId string
+			for _, f := range cfg.Fields {
+				if f.IsPrimary {
+					val := results[0][f.Name]
+					if val == nil {
+						return nil, fmt.Errorf("primary key field %s is null", f.Name)
+					}
+
+					recordId = fmt.Sprint(val)
+					break
+				}
+			}
+
+			recordJson, err := json.Marshal(results[0])
+			if err != nil {
+				return nil, err
+			}
+
+			queryAudit := "SELECT audit_log_fn($1, $2, $3, $4, $5)"
+
+			var success bool
+			err = trx.QueryRow(queryAudit,
+				"c",
+				sessionUsr.ID,
+				cfg.ID,
+				recordId,
+				recordJson,
+			).Scan(&success)
+
+			if err != nil || !success {
+				trx.Rollback()
+				return nil, fmt.Errorf("audit log failed: %w", err)
+			}
+
+			trx.Commit()
 			return results[0], nil
 		}
+		trx.Rollback()
 		return nil, fmt.Errorf("insert did not return a row")
 		// #TODO
 	case "update":
@@ -527,8 +571,9 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 			i,
 		)
 
+		trx, err := db.Begin()
 		log.Printf("Executing SQL: %s with args: %v", query, args)
-		rows, err := db.Query(query, args...)
+		rows, err := trx.Query(query, args...)
 		if err != nil {
 			return nil, err
 		}
@@ -538,11 +583,50 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 			return nil, err
 		}
 		if len(results) > 0 {
+			sessionUsr, err := permissions.GetSessionUser(db, req.SessionId)
+			if err != nil {
+				return nil, err
+			}
+			var recordId string
+			for _, f := range cfg.Fields {
+				if f.IsPrimary {
+					val := results[0][f.Name]
+					if val == nil {
+						return nil, fmt.Errorf("primary key field %s is null", f.Name)
+					}
+
+					recordId = fmt.Sprint(val)
+					break
+				}
+			}
+
+			recordJson, err := json.Marshal(results[0])
+			if err != nil {
+				return nil, err
+			}
+
+			queryAudit := "SELECT audit_log_fn($1, $2, $3, $4, $5)"
+
+			var success bool
+			err = trx.QueryRow(queryAudit,
+				"u",
+				sessionUsr.ID,
+				cfg.ID,
+				recordId,
+				recordJson,
+			).Scan(&success)
+
+			if err != nil || !success {
+				trx.Rollback()
+				return nil, fmt.Errorf("audit log failed: %w", err)
+			}
+
+			trx.Commit()
 			return results[0], nil
 		}
+		trx.Rollback()
 		return nil, fmt.Errorf("update did not return a row or no row was found to update")
 
-	// #TODO
 	case "delete":
 		var pkFields []string
 		for name, field := range cfg.Fields {
@@ -567,17 +651,71 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 			i++
 		}
 
+		trx, err := db.Begin()
+		queryForAuditLog := fmt.Sprintf("SELECT * FROM %s WHERE %s LIMIT 1;",
+			pq.QuoteIdentifier(cfg.Name),
+			strings.Join(whereParts, " AND "),
+		)
+		rows, err := trx.Query(queryForAuditLog, args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		results, err := ScanRowsToMaps(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		sessionUsr, err := permissions.GetSessionUser(db, req.SessionId)
+		if err != nil {
+			return nil, err
+		}
+		var recordId string
+		for _, f := range cfg.Fields {
+			if f.IsPrimary {
+				val := results[0][f.Name]
+				if val == nil {
+					return nil, fmt.Errorf("primary key field %s is null", f.Name)
+				}
+
+				recordId = fmt.Sprint(val)
+				break
+			}
+		}
+
+		recordJson, err := json.Marshal(results[0])
+		if err != nil {
+			return nil, err
+		}
+
+		queryAudit := "SELECT audit_log_fn($1, $2, $3, $4, $5)"
+
+		var success bool
+		err = trx.QueryRow(queryAudit,
+			"d",
+			sessionUsr.ID,
+			cfg.ID,
+			recordId,
+			recordJson,
+		).Scan(&success)
+
+		if err != nil || !success {
+			trx.Rollback()
+			return nil, fmt.Errorf("audit log failed: %w", err)
+		}
+
 		query := fmt.Sprintf("DELETE FROM %s WHERE %s",
 			pq.QuoteIdentifier(cfg.Name),
 			strings.Join(whereParts, " AND "),
 		)
 
 		log.Printf("Executing SQL: %s with args: %v", query, args)
-		result, err := db.Exec(query, args...)
+		result, err := trx.Exec(query, args...)
 		if err != nil {
 			return nil, err
 		}
 		rowsAffected, _ := result.RowsAffected()
+		trx.Commit()
 		return map[string]interface{}{"status": "deleted", "rows_affected": rowsAffected}, nil
 
 	default:

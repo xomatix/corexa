@@ -281,6 +281,7 @@ func LoadConfig(db *sql.DB) error {
 	ConfigCacheByID[coreDataTypes.ID] = coreDataTypes
 
 	loadPermissionsConfig()
+	loadAuditLogsConfig()
 
 	log.Printf("Loaded %d collections into cache (by name).", len(ConfigCache))
 	return nil
@@ -577,4 +578,79 @@ func loadPermissionsConfig() {
 	ConfigCache[coreUsers.Name] = coreUsers
 	ConfigCacheByID[coreUsers.ID] = coreUsers
 
+}
+
+func loadAuditLogsConfig() {
+	// Audit logs table
+	coreAuditLogs := CollectionConfig{
+		ID:    "core_audit_logs",
+		Name:  "audit_logs",
+		Label: "Audit logs [CORE]",
+		Fields: map[string]FieldConfig{
+			"collection_id": {
+				ID:           "collection_id",
+				CollectionID: "core_audit_logs",
+				Name:         "collection_id",
+				Label:        "Collection Id",
+				Type:         "uuid",
+				IsPrimary:    false,
+				IsNotNull:    true,
+				IsUnique:     false,
+				ForeignTable: "core_collections",
+			},
+			"action": {
+				ID:           "action",
+				CollectionID: "core_audit_logs",
+				Name:         "action",
+				Label:        "action",
+				Type:         "varchar(1)",
+				IsPrimary:    false,
+				IsNotNull:    true,
+				IsUnique:     false,
+			},
+			"record_id": {
+				ID:           "record_id",
+				CollectionID: "core_audit_logs",
+				Name:         "record_id",
+				Label:        "Record Id",
+				Type:         "uuid",
+				IsPrimary:    false,
+				IsNotNull:    true,
+				IsUnique:     false,
+			},
+			"record": {
+				ID:           "record",
+				CollectionID: "core_audit_logs",
+				Name:         "Record",
+				Label:        "record",
+				Type:         "jsonb",
+				IsPrimary:    false,
+				IsNotNull:    true,
+				IsUnique:     false,
+			},
+			"changed_at": {
+				ID:           "changed_at",
+				CollectionID: "core_audit_logs",
+				Name:         "Changed At",
+				Label:        "changed_at",
+				Type:         "TIMESTAMP",
+				IsPrimary:    false,
+				IsNotNull:    true,
+				IsUnique:     false,
+			},
+			"changed_user_id": {
+				ID:           "changed_user_id",
+				CollectionID: "core_audit_logs",
+				Name:         "changed_user_id",
+				Label:        "Changed User Id",
+				Type:         "TIMESTAMP",
+				IsPrimary:    false,
+				IsNotNull:    true,
+				IsUnique:     false,
+				ForeignTable: "core_users",
+			},
+		},
+	}
+	ConfigCache[coreAuditLogs.Name] = coreAuditLogs
+	ConfigCacheByID[coreAuditLogs.ID] = coreAuditLogs
 }

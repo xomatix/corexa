@@ -71,3 +71,39 @@ BEGIN
     RETURN v_sql;
 END;
 $function$;
+
+
+CREATE OR REPLACE FUNCTION audit_log_fn(
+    action varchar(1), 
+    user_id uuid, 
+    collection_id uuid, 
+    record_id uuid, 
+    record jsonb
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$    
+BEGIN    
+    INSERT INTO audit_logs (
+        collection_id,
+        action,
+        record_id,
+        record,
+        changed_at,
+        changed_user_id
+    )
+    VALUES (
+        collection_id,
+        action,
+        record_id,
+        record,
+        now(),
+        user_id
+    );
+
+    RETURN TRUE;
+
+EXCEPTION WHEN OTHERS THEN
+    RETURN FALSE;
+END;
+$$;

@@ -93,3 +93,22 @@ CREATE TABLE IF NOT EXISTS collection_permissions (
     action varchar(1), -- Create, Read, Update, Delete
     PRIMARY KEY (collections_id, permissions_id, action)
 );
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+    collection_id   uuid NOT NULl,
+    action          varchar(1) NOT NULL, -- Create, Read, Update, Delete
+    record_id       uuid NOT NULl,
+    record          JSONB NOT NULl,
+    changed_at      TIMESTAMP DEFAULT now(),
+    changed_user_id uuid,
+    CONSTRAINT fk_user 
+        FOREIGN KEY (changed_user_id) 
+        REFERENCES users(id) 
+        ON DELETE SET NULL,
+    CONSTRAINT fk_collection
+        FOREIGN KEY (collection_id) 
+        REFERENCES collections(id) 
+        ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_time ON audit_logs (changed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_record_history ON audit_logs (record_id, changed_at DESC);
