@@ -95,12 +95,14 @@ CREATE TABLE IF NOT EXISTS collection_permissions (
 );
 
 CREATE TABLE IF NOT EXISTS audit_logs (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
     collection_id   uuid NOT NULl,
     action          varchar(1) NOT NULL, -- Create, Read, Update, Delete
     record_id       uuid NOT NULl,
     record          JSONB NOT NULl,
     changed_at      TIMESTAMP DEFAULT now(),
     changed_user_id uuid,
+    CONSTRAINT audit_logs_pkey PRIMARY KEY (id),
     CONSTRAINT fk_user 
         FOREIGN KEY (changed_user_id) 
         REFERENCES users(id) 

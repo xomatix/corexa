@@ -66,6 +66,7 @@ function CInput({
   setFieldMap = {},
   limit = 20,
   order = "",
+  options = undefined,
   children,
 }) {
   const [isLookupExp, setIsLookupExp] = useState(false);
@@ -115,7 +116,11 @@ function CInput({
   };
 
   const handleLookupLoadData = async () => {
-    if (collection == "") return;
+    if (collection == "") {
+      if (options != undefined && typeof options == typeof [])
+        setLookupList(options);
+      return;
+    }
 
     const data = (await select(collection, filter, expand, order, limit)).data;
 

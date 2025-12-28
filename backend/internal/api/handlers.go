@@ -72,7 +72,6 @@ func SaveHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		// #TODO
 		result, err := service.HandleSave(db, req, cfg)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

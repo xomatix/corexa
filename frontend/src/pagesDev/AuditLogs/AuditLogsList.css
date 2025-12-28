@@ -1,0 +1,66 @@
+.c-audit-logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+
+  span.c-audit-logs-title {
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .c-filters-bar {
+    display: flex;
+    gap: 8px;
+
+    .c-input {
+      width: 168px;
+    }
+
+    .c-btn {
+      margin-top: auto;
+    }
+
+    .c-filter-chip {
+      margin-top: auto;
+      padding: 0 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background-color: var(--bg);
+      height: 36px;
+      align-content: center;
+      justify-content: center;
+
+      > img {
+        width: 20px;
+        cursor: pointer;
+        height: 20px;
+        border: 0;
+        transition: all 0.18s ease-in-out;
+        &:hover {
+          background-color: var(--bg-dark);
+          border-radius: 4px;
+          width: 18px;
+          height: 18px;
+          border: 1px solid var(--border);
+        }
+      }
+    }
+  }
+  .modal-body {
+    gap: 8px;
+  }
+  .c-audit-log-info {
+    display: flex;
+    gap: 4px;
+    > .c-audit-log-label {
+      font-weight: 600;
+      &::after {
+        content: ":";
+      }
+    }
+    > .c-audit-log-value {
+      font-weight: 400;
+    }
+  }
+}

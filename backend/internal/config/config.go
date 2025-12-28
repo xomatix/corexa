@@ -587,6 +587,16 @@ func loadAuditLogsConfig() {
 		Name:  "audit_logs",
 		Label: "Audit logs [CORE]",
 		Fields: map[string]FieldConfig{
+			"id": {
+				ID:           "id",
+				CollectionID: "core_audit_logs",
+				Name:         "id",
+				Label:        "Id",
+				Type:         "uuid",
+				IsPrimary:    true,
+				IsNotNull:    true,
+				IsUnique:     true,
+			},
 			"collection_id": {
 				ID:           "collection_id",
 				CollectionID: "core_audit_logs",

@@ -19,6 +19,7 @@ import Login from "./pagesDev/Login/Login";
 import UsersList from "./pagesDev/Users/UsersList";
 import CTable from "./components/CTable/Ctable";
 import { getSessionToken, setSessionToken } from "./service/service";
+import AuditLogs from "./pagesDev/AuditLogs/AuditLogsList";
 
 function App() {
   const isLoggedIn = getSessionToken() != null && getSessionToken().length > 0;
@@ -43,6 +44,7 @@ function App() {
             <Link to={"/permissions"}>Permissions</Link>
             <Link to={"/roles"}>Roles</Link>
             <Link to={"/users"}>Users</Link>
+            <Link to={"/audit_logs"}>Audit Logs</Link>
             <a
               className="c-last"
               onClick={() => handleLogout()}
@@ -63,6 +65,7 @@ function App() {
             <Route path="/permissions" element={<PermissionsList />} />
             <Route path="/roles" element={<RolesList />} />
             <Route path="/users" element={<UsersList />} />
+            <Route path="/audit_logs" element={<AuditLogs />} />
             <Route path="/flowbuilder" element={<FlowBuilder />} />
             <Route path="/formbuilder" element={<FormBuilder />} />
           </>

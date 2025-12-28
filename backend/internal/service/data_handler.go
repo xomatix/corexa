@@ -15,7 +15,6 @@ import (
 	"github.com/lib/pq"
 )
 
-// #TODO
 func ScanRowsToMaps(rows *sql.Rows) ([]map[string]interface{}, error) {
 	columns, err := rows.Columns()
 	if err != nil {
@@ -400,7 +399,6 @@ func HandleInvokeSelect(db *sql.DB, req models.InvokeSelectRequest, sessionUser 
 	}, nil
 }
 
-// #TODO
 func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig) (interface{}, error) {
 	for key, val := range req.Data {
 		fieldCfg, _ := cfg.Fields[key]
@@ -723,7 +721,7 @@ func HandleSave(db *sql.DB, req models.SaveRequest, cfg config.CollectionConfig)
 	}
 }
 
-// findPrimaryKey remains the same #TODO
+// findPrimaryKey remains
 func findPrimaryKey(cfg config.CollectionConfig) (string, bool) {
 	for name, field := range cfg.Fields {
 		if field.IsPrimary {
